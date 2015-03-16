@@ -87,7 +87,14 @@ void SceneNode::scale(const Vector3D& amount)
 	temp[1][1] = amount[1];
 	temp[2][2] = amount[2];
 	
-	m_scale = m_scale * temp;
+	// m_scale = m_scale * temp;
+	m_trans = m_trans * temp;
+	
+	Matrix4x4 trans = m_parent_trans * m_trans;
+	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
+		(*i)->set_parent_transform(trans);
+	}
+
 	m_final_trans = m_parent_trans * m_trans * m_scale;
 }
 
@@ -170,7 +177,8 @@ GeometryNode::~GeometryNode()
 
 void GeometryNode::set_parent_transform(const Matrix4x4& m)
 {
-	m_final_trans = m * m_trans * m_scale;
+	m_parent_trans = m;
+	m_final_trans = m_parent_trans * m_trans * m_scale;
 	m_primitive->transform(m_final_trans);
 	SceneNode::set_parent_transform(m);
 }	

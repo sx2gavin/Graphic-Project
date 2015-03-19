@@ -96,22 +96,6 @@ bool SceneNode::is_joint() const
 	return false;
 }
 
-int SceneNode::rayTracing(Point3D eye, Point3D p_world, pixel& p)
-{
-	pixel temp;
-	int retVal = 0;
-	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
-		(*i)->set_parent_transform(m_parent_trans * m_trans);
-		if ( (*i)->rayTracing(eye,  p_world, temp)) {
-			retVal = 1;
-			if ( p.z_buffer == 0 || p.z_buffer > temp.z_buffer ) {
-				p = temp;
-			}
-		}
-	}
-	return retVal;
-}
-
 void SceneNode::collectPrimitives(std::list<Primitive*> &objects)
 {
 	std::cerr << "In SceneNode collectPrimitives Okay" << std::endl;
@@ -157,25 +141,6 @@ void JointNode::set_joint_y(double min, double init, double max)
 
 GeometryNode::~GeometryNode()
 {
-}
-
-int GeometryNode::rayTracing(Point3D eye, Point3D p_world, pixel& p)
-{
-	int retVal = 0;
-	pixel temp;
-	m_primitive->transform(m_parent_trans * m_trans * m_scale);
-	m_primitive->setMaterial(m_material);
-	/*if ( m_primitive->rayTracing(eye, p_world, temp)) {
-		retVal = 1;
-		p = temp;
-	}*/
-	if ( SceneNode::rayTracing(eye, p_world, temp)) {
-		retVal = 1;
-		if (p.z_buffer > temp.z_buffer) {
-			p = temp;
-		}
-	}
-	return retVal;
 }
 
 void GeometryNode::collectPrimitives(std::list<Primitive*> &objects)

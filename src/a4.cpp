@@ -1,6 +1,7 @@
 #include "a4.hpp"
 #include "image.hpp"
 #include "pixel.hpp"
+#include "primitive.hpp"
 
 void render_background(int width, int height, Image *img) 
 {
@@ -20,6 +21,35 @@ void render_background(int width, int height, Image *img)
 		}
 	}	
 }
+
+int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, pixel& p)
+{
+	pixel temp;
+	int retVal = 0;
+	for (std::list<Primitive*>::const_iterator i = objects.begin(); i != objects.end(); i++) {
+		if ((*i)->rayTracing(eye, p_world, temp)) {
+			retVal = 1;
+			if ( p.z_buffer == 0 || p.z_buffer > temp.z_buffer) {
+				p = temp;
+			}
+		}	
+	}
+	return retVal;
+}
+
+int rayTracingHit(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, pixel& p)
+{
+	pixel temp;
+	int retVal = 0;
+	for (std::list<Primitive*>::const_iterator i = objects.begin(); i != objects.end(); i++) {
+		if ((*i)->rayTracing(eye, p_world, temp)) {
+			retVal = 1;
+			break;
+		}	
+	}
+	return retVal;
+}
+
 void a4_render(// What to render
                SceneNode* root,
                // Where to output the image
@@ -34,8 +64,6 @@ void a4_render(// What to render
                const std::list<Light*>& lights
                )
 {
-  // Fill in raytracing code here.
-
   std::cerr << "Stub: a4_render(" << root << ",\n     "
             << filename << ", " << width << ", " << height << ",\n     "
             << eye << ", " << view << ", " << up << ", " << fov << ",\n     "
@@ -47,13 +75,19 @@ void a4_render(// What to render
   }
   std::cerr << "});" << std::endl;
 
-  Image img(width, height, 3);
+  std::list<Primitive*> objects;
+  root->collectPrimitives(objects);
 
-  render_background(width, height, &img);
+  std::cerr << "collect complete." << std::endl;
+  std::cout << "size of objects: " << objects.size() << std::endl;
 
   Point3D p_world;
+  Image img(width, height, 3);
+  render_background(width, height, &img);
+
 
   for (int y = 0; y < height; y++) {
+	 std::cerr << y * 100 / height << "% finished." << std::endl;
 	 for (int x = 0; x < width; x++) {
 		// for each pixel, find the p_world that is corresponding to the pixel (x, y).
 		pixel p;
@@ -98,12 +132,10 @@ void a4_render(// What to render
 		p_world[1] = p_screen[1] + eye[1];
 		p_world[2] = p_screen[2] + eye[2];
 
-		// std::cerr << "p_world = " << p_world << std::endl;
-
 		Colour pixel_color(0, 0, 0);
 
 		// primary ray
-		if (root->rayTracing(eye, p_world, p)) {
+		if (rayTracing(objects, eye, p_world, p)) {
 			// Adding Phong shading.
 			Point3D hitPoint = eye + (p.z_buffer - 0.001) * (p_world - eye);
 			pixel_color  = ambient * p.material->getDiffuseColor();
@@ -111,9 +143,9 @@ void a4_render(// What to render
 			for (std::list<Light*>::const_iterator I = lights.begin(); I != lights.end(); I++) { 
 				pixel temp;
 				// secondary ray, adding shadows.
-				if (root->rayTracing(hitPoint, (*I)->position, temp)) {
+				/*if (rayTracingHit(objects, hitPoint, (*I)->position, temp)) {
 					continue;
-				}	
+				}*/	
 				Vector3D lightDirection = (*I)->position - hitPoint;
 				double distance = lightDirection.length();
 				double attenuation = 1 / ((*I)->falloff[0] + distance* (*I)->falloff[1] + distance * distance * (*I)->falloff[2]);
@@ -149,4 +181,7 @@ void a4_render(// What to render
 	 }
   }
   img.savePng(filename);  
+  for (std::list<Primitive*>::const_iterator i = objects.begin(); i != objects.end(); i++) {
+	delete (*i);
+  } 
 }

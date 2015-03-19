@@ -18,6 +18,7 @@ public:
 
   virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
   virtual void transform(const Matrix4x4 t);
+  virtual Primitive* clone(); 
   
 private:
   std::vector<Point3D> m_trans_verts;

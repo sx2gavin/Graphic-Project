@@ -99,6 +99,12 @@ void Mesh::transform(const Matrix4x4 t)
 	}
 }
 
+Primitive* Mesh::clone()
+{
+	Mesh* new_mesh = new Mesh(m_verts, m_faces);
+	return new_mesh;
+}
+
 std::ostream& operator<<(std::ostream& out, const Mesh& mesh)
 {
 	std::cerr << "mesh({";

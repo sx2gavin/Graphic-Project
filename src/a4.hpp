@@ -8,6 +8,11 @@
 
 void render_background(int width, int height, Image *img);
 
+int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, pixel& p);
+
+int rayTracingHit(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, pixel& p);
+
+
 void a4_render(// What to render
                SceneNode* root,
                // Where to output the image

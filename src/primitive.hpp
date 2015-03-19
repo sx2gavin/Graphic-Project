@@ -17,8 +17,9 @@ class Primitive {
 			m_material = m;
 		}
 		virtual void transform(const Matrix4x4 t){}
+		virtual Primitive* clone();
 
-		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p) = 0;
+		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p){return 0;}
 
 	protected:
 		Material*  m_material;	
@@ -30,6 +31,7 @@ class Sphere : public Primitive {
 		virtual ~Sphere();
 		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
 		virtual void transform(const Matrix4x4 t);
+		virtual Primitive* clone();
 		void addTriangle(std::vector<Point3D>* sphere_vertices, std::vector<Point3D> vertices, int index_1, int index_2, int index_3);
 		void addTriangle(std::vector<Point3D>* sphere_vertices, Point3D point_1, Point3D point_2, Point3D point_3);
 
@@ -46,6 +48,7 @@ class Cube : public Primitive {
 		virtual ~Cube();
 		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
 		virtual void transform(const Matrix4x4 t);
+		virtual Primitive* clone();
 	private:
 		std::vector<Point3D> m_trans_verts;
 		std::vector<Point3D> m_verts;
@@ -59,6 +62,8 @@ class NonhierSphere : public Primitive {
 		{
 		}
 		virtual ~NonhierSphere();
+
+		virtual Primitive* clone();
 
 		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
 
@@ -82,6 +87,7 @@ class NonhierBox : public Primitive {
 		NonhierBox(const Point3D& pos, double size);
 
 		virtual ~NonhierBox();
+		virtual Primitive* clone();
 		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
 
 	private:

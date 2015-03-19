@@ -1,5 +1,6 @@
 #include <iostream>
 #include "scene.hpp"
+#include <cstring>
 
 SceneNode::SceneNode(const std::string& name)
 : m_name(name)
@@ -13,16 +14,11 @@ SceneNode::~SceneNode()
 void SceneNode::set_parent_transform(const Matrix4x4& m)
 {
 	m_parent_trans = m;
-
-	Matrix4x4 trans = m_parent_trans * m_trans;
-	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
-		(*i)->set_parent_transform(trans);
-	}
 }
+
 void SceneNode::rotate(char axis, double angle)
 {
 	std::cerr << "Stub: Rotate " << m_name << " around " << axis << " by " << angle << std::endl;
-	// Fill me in
 	
 	double data[16];
 	data[3] = 0;
@@ -70,13 +66,6 @@ void SceneNode::rotate(char axis, double angle)
 		Matrix4x4 temp_matrix(data);
 		m_trans = m_trans * temp_matrix;
 	}
-
-	Matrix4x4 trans = m_parent_trans * m_trans;
-	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
-		(*i)->set_parent_transform(trans);
-	}
-
-	m_final_trans = m_parent_trans * m_trans * m_scale;
 }
 
 void SceneNode::scale(const Vector3D& amount)
@@ -87,15 +76,7 @@ void SceneNode::scale(const Vector3D& amount)
 	temp[1][1] = amount[1];
 	temp[2][2] = amount[2];
 	
-	// m_scale = m_scale * temp;
-	m_trans = m_trans * temp;
-	
-	Matrix4x4 trans = m_parent_trans * m_trans;
-	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
-		(*i)->set_parent_transform(trans);
-	}
-
-	m_final_trans = m_parent_trans * m_trans * m_scale;
+	m_scale = m_scale * temp;
 }
 
 void SceneNode::translate(const Vector3D& amount)
@@ -108,13 +89,6 @@ void SceneNode::translate(const Vector3D& amount)
 	temp[2][3] = amount[2];
 
 	m_trans = m_trans * temp;
-
-	Matrix4x4 trans = m_parent_trans * m_trans;
-	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
-		(*i)->set_parent_transform(trans);
-	}
-
-	m_final_trans = m_parent_trans * m_trans * m_scale;
 }
 
 bool SceneNode::is_joint() const
@@ -127,6 +101,7 @@ int SceneNode::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 	pixel temp;
 	int retVal = 0;
 	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
+		(*i)->set_parent_transform(m_parent_trans * m_trans);
 		if ( (*i)->rayTracing(eye,  p_world, temp)) {
 			retVal = 1;
 			if ( p.z_buffer == 0 || p.z_buffer > temp.z_buffer ) {
@@ -135,6 +110,15 @@ int SceneNode::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 		}
 	}
 	return retVal;
+}
+
+void SceneNode::collectPrimitives(std::list<Primitive*> &objects)
+{
+	std::cerr << "In SceneNode collectPrimitives Okay" << std::endl;
+	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
+		(*i)->set_parent_transform(m_parent_trans * m_trans);
+		(*i)->collectPrimitives(objects);	
+	}	
 }
 
 JointNode::JointNode(const std::string& name)
@@ -175,39 +159,16 @@ GeometryNode::~GeometryNode()
 {
 }
 
-void GeometryNode::set_parent_transform(const Matrix4x4& m)
-{
-	m_parent_trans = m;
-	m_final_trans = m_parent_trans * m_trans * m_scale;
-	m_primitive->transform(m_final_trans);
-	SceneNode::set_parent_transform(m);
-}	
-
-void GeometryNode::rotate (char axis, double angle)
-{
-	SceneNode::rotate(axis, angle);
-	m_primitive->transform(m_final_trans);
-}
-void GeometryNode::scale(const Vector3D& amount)
-{
-	SceneNode::scale(amount);
-	m_primitive->transform(m_final_trans);
-}
-void GeometryNode::translate(const Vector3D& amount)
-{
-	SceneNode::translate(amount);
-	m_primitive->transform(m_final_trans);
-}
-
 int GeometryNode::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 {
 	int retVal = 0;
 	pixel temp;
+	m_primitive->transform(m_parent_trans * m_trans * m_scale);
 	m_primitive->setMaterial(m_material);
-	if ( m_primitive->rayTracing(eye, p_world, temp)) {
+	/*if ( m_primitive->rayTracing(eye, p_world, temp)) {
 		retVal = 1;
 		p = temp;
-	}
+	}*/
 	if ( SceneNode::rayTracing(eye, p_world, temp)) {
 		retVal = 1;
 		if (p.z_buffer > temp.z_buffer) {
@@ -215,4 +176,16 @@ int GeometryNode::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 		}
 	}
 	return retVal;
+}
+
+void GeometryNode::collectPrimitives(std::list<Primitive*> &objects)
+{
+	Primitive *new_object = new Primitive;
+	new_object = m_primitive->clone();
+	new_object->transform(m_parent_trans * m_trans * m_scale);
+	new_object->setMaterial(m_material);
+	std::cerr << "In GeometryNode CollectPrimitives Okay" << std::endl;
+
+	objects.push_back(new_object);
+	SceneNode::collectPrimitives(objects);
 }

@@ -5,6 +5,13 @@ Primitive::~Primitive()
 {
 }
 
+Primitive* Primitive::clone()
+{
+	Primitive* new_primitive = new Primitive;
+	new_primitive->setMaterial(m_material);
+	return new_primitive;
+}
+
 Sphere::Sphere() 
 {
 	std::vector<Point3D> vertices;
@@ -104,6 +111,12 @@ void Sphere::addTriangle (std::vector<Point3D>* sphere_vertices, std::vector<Poi
 		sphere_vertices->push_back(point);
 	}
 
+}
+
+Primitive* Sphere::clone()
+{
+	Sphere* new_sphere = new Sphere;
+	return new_sphere;
 }
 
 void Sphere::addTriangle(std::vector<Point3D>* sphere_vertices, Point3D point_1, Point3D point_2, Point3D point_3)
@@ -365,9 +378,22 @@ void Cube::transform(const Matrix4x4 t)
 	}
 }
 
+Primitive* Cube::clone()
+{
+	Cube* new_cube = new Cube;
+	return new_cube;
+}
+
 NonhierSphere::~NonhierSphere()
 {
 }
+
+Primitive* NonhierSphere::clone()
+{
+	NonhierSphere* new_nhsphere = new NonhierSphere(m_pos, m_radius);
+	return new_nhsphere;
+}
+
 
 int NonhierSphere::rayTracing(Point3D eye, Point3D p_world, pixel& p) 
 {
@@ -442,6 +468,12 @@ NonhierBox::NonhierBox(const Point3D& pos, double size)
 
 NonhierBox::~NonhierBox()
 {
+}
+
+Primitive* NonhierBox::clone()
+{
+	NonhierBox* new_nhbox = new NonhierBox(m_pos, m_size);
+	return new_nhbox;
 }
 
 int NonhierBox::rayTracing(Point3D eye, Point3D p_world,  pixel& p)

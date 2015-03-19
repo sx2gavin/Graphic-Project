@@ -34,7 +34,6 @@ class SceneNode {
 		void add_child(SceneNode* child)
 		{
 			m_children.push_back(child);
-			child->set_parent_transform(m_parent_trans * m_trans);
 		}
 
 		void remove_child(SceneNode* child)
@@ -44,13 +43,14 @@ class SceneNode {
 
 		// Callbacks to be implemented.
 		// These will be called from Lua.
-		virtual void rotate(char axis, double angle);
-		virtual void scale(const Vector3D& amount);
-		virtual void translate(const Vector3D& amount);
+		void rotate(char axis, double angle);
+		void scale(const Vector3D& amount);
+		void translate(const Vector3D& amount);
 
 		// Returns true if and only if this node is a JointNode
 		virtual bool is_joint() const; 
 		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
+		virtual void collectPrimitives(std::list<Primitive*> &objects);
 
 	protected:
 
@@ -62,7 +62,6 @@ class SceneNode {
 		Matrix4x4 m_trans;
 		Matrix4x4 m_parent_trans;
 		Matrix4x4 m_scale;
-		Matrix4x4 m_final_trans;
 		Matrix4x4 m_invtrans;
 
 		// Hierarchy
@@ -102,13 +101,8 @@ class GeometryNode : public SceneNode {
 		{
 			m_material = material;
 		}
-
-		virtual void rotate(char axis, double angle);
-		virtual void scale(const Vector3D& amount);
-		virtual void translate(const Vector3D& amount);
-		virtual void set_parent_transform(const Matrix4x4& m); 
-		
 		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
+		virtual void collectPrimitives(std::list<Primitive*> &objects);
 
 	protected:
 		Material* m_material;

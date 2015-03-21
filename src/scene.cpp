@@ -98,7 +98,6 @@ bool SceneNode::is_joint() const
 
 void SceneNode::collectPrimitives(std::list<Primitive*> &objects)
 {
-	std::cerr << "In SceneNode collectPrimitives Okay" << std::endl;
 	for (std::list<SceneNode*>::const_iterator i = m_children.begin(); i != m_children.end(); ++i) {
 		(*i)->set_parent_transform(m_parent_trans * m_trans);
 		(*i)->collectPrimitives(objects);	
@@ -149,7 +148,6 @@ void GeometryNode::collectPrimitives(std::list<Primitive*> &objects)
 	new_object = m_primitive->clone();
 	new_object->transform(m_parent_trans * m_trans * m_scale);
 	new_object->setMaterial(m_material);
-	std::cerr << "In GeometryNode CollectPrimitives Okay" << std::endl;
 
 	objects.push_back(new_object);
 	SceneNode::collectPrimitives(objects);

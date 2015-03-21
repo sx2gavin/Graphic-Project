@@ -12,24 +12,11 @@ int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, pix
 
 int rayTracingHit(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, pixel& p);
 
-void rayTracingAtPixel(int height, 
-					   int width,
-					   int y,
-					   int x,
-					   Image &img,
-					   std::list<Primitive*> &objects,
-					   const Point3D& eye,
-					   const Vector3D& view,
-					   const Vector3D& up,
-					   double fov,
-					   const Colour& ambient,
-					   const std::list<Light*>& lights); 
-
 void multiProcessing(int from, 
 			         int to, 
 					 int height, 
 					 int width, 
-					 Image &img, 
+					 Image *img, 
 					 std::list<Primitive*> &objects,
 					 const Point3D& eye, 
 					 const Vector3D& view, 

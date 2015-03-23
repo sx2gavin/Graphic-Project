@@ -1,5 +1,6 @@
 #include "primitive.hpp"
 #include "polyroots.hpp"
+#include <cmath>
 
 Primitive::~Primitive()
 {
@@ -555,6 +556,68 @@ int NonhierBox::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 				break;
 			}
 		}
+	}
+	return retVal;
+}
+
+Cone::Cone(const Point3D& d, const Point3D& pos, double height, double radius):m_pos(pos), m_height(height), m_radius(radius) 
+{
+	m_d[0] = d[0];
+	m_d[1] = d[1];
+	m_d[2] = d[2];	
+	m_d.normalize();
+}
+
+Cone::~Cone()
+{
+}
+
+Primitive* Cone::clone()
+{
+	Point3D temp(m_d[0], m_d[1], m_d[2]);
+	Cone *new_cone = new Cone(temp, m_pos, m_height, m_radius);
+	// std::cerr << temp << " " << m_pos << " " << m_height << " " << m_radius << std::endl;
+	return new_cone;
+}
+
+int Cone::rayTracing(Point3D eye, Point3D p_world, pixel& p)
+{
+	int retVal = 0;
+	Point3D q;
+	double angle = atan(m_radius / m_height);
+	Vector3D v = p_world - eye;
+	Vector3D delta_p = eye - m_pos;
+	double v_dot_m_d = v.dot(m_d);
+	double p_dot_m_d = delta_p.dot(m_d);
+	
+	double a = pow(cos(angle), 2) * (v - v_dot_m_d * m_d).length2() - pow(sin(angle) * v_dot_m_d, 2);
+	double b = 2 * pow(cos(angle), 2) * (v - v_dot_m_d * m_d).dot(delta_p - p_dot_m_d * m_d) - 2 * pow(sin(angle), 2) * v_dot_m_d * p_dot_m_d;
+	double c = pow(cos(angle), 2) * (delta_p - p_dot_m_d * m_d).length2() - pow(sin(angle) * p_dot_m_d, 2) ; 
+	double roots[2]; 
+	
+	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
+		q = eye + roots[0] * (p_world - eye);
+		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+			p.z_buffer = roots[0];
+			retVal = 1;
+		}
+	} else if (quadraticRoots(a, b, c, roots) > 1 && std::min(roots[0], roots[1]) > 0) {
+		q = eye + std::min(roots[0], roots[1]) * (p_world - eye);
+		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+			p.z_buffer = std::min(roots[0], roots[1]);
+			retVal = 1;
+		} else {
+			q = eye + std::max(roots[0], roots[1]) * (p_world - eye);
+			if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+				p.z_buffer = std::max(roots[0], roots[1]);
+				retVal = 1;
+			}
+		}
+	}
+
+	if (retVal) {
+		p.material = m_material;
+		p.normal = q - (m_pos + (q - m_pos).length() / cos(angle) * m_d);
 	}
 	return retVal;
 }

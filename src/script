@@ -1,4 +1,4 @@
 mv rt ../data
 cd ../data
-./rt macho-cows.lua
+./rt simple.lua
 cd ../src

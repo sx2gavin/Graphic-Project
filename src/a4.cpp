@@ -179,7 +179,7 @@ void a4_render(// What to render
 		)
 {
 	// defines threads.
-	int num_threads = 6;
+	int num_threads = 1;
 	int from_height = 0;
 	int to_height = 0; 
 	std::thread *threads;

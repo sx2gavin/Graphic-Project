@@ -98,4 +98,18 @@ class NonhierBox : public Primitive {
 		std::vector< std::vector<int> > m_faces;
 };
 
+class Cone : public Primitive {
+	public:
+		Cone(const Point3D& d, const Point3D& pos,  double m_height, double m_radius);		
+		virtual ~Cone();
+		virtual Primitive* clone();
+		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
+
+	private:
+		Vector3D m_d;
+		Point3D m_pos;
+		double m_height;
+		double m_radius;
+};
+
 #endif

@@ -62,7 +62,7 @@ Sphere::Sphere()
 	// refine triangles
 	for (int i = 0; i < 2; i++) {
 		std::vector<Point3D> new_sphere_vertices;
-		for (int j = 0; j < m_verts.size(); j+=3) {
+		for (unsigned int j = 0; j < m_verts.size(); j+=3) {
 			Point3D a(m_verts[j]);
 			Point3D b(m_verts[j+1]);	
 			Point3D c(m_verts[j+2]);
@@ -164,7 +164,6 @@ int Sphere::rayTracing (Point3D eye, Point3D p_world,  pixel& p)
 	Point3D p1;
 	Point3D p2;
 	Vector3D n;
-	float num;
 	float den;
 	float x1;
 	float x2;
@@ -194,7 +193,6 @@ int Sphere::rayTracing (Point3D eye, Point3D p_world,  pixel& p)
 		p2 = *(I + 2);
 
 		n = (p1 - p0).cross(p2 - p0);
-		// num = - n.dot(eye - p0);
 		den = n.dot(p_world - eye);
 
 		// if the ray doesn't hit the plane represented by the triangle.
@@ -295,7 +293,6 @@ int Cube::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 	Point3D p1;
 	Point3D p2;
 	Vector3D n;
-	float num;
 	float den;
 	float x1;
 	float x2;
@@ -325,7 +322,6 @@ int Cube::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 			p2 = m_trans_verts[*(J + 2)];
 
 			n = (p1 - p0).cross(p2 - p0);
-			// num = - n.dot(eye - p0);
 			den = n.dot(p_world - eye);
 
 			// if the ray doesn't hit the plane represented by the triangle.
@@ -485,7 +481,6 @@ int NonhierBox::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 	Point3D p1;
 	Point3D p2;
 	Vector3D n;
-	float num;
 	float den;
 	float x1;
 	float x2;
@@ -514,7 +509,6 @@ int NonhierBox::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 			p2 = m_verts[*(J + 2)];
 
 			n = (p1 - p0).cross(p2 - p0);
-			// num = - n.dot(eye - p0);
 			den = n.dot(p_world - eye);
 
 			// if the ray doesn't hit the plane represented by the triangle.
@@ -576,7 +570,6 @@ Primitive* Cone::clone()
 {
 	Point3D temp(m_d[0], m_d[1], m_d[2]);
 	Cone *new_cone = new Cone(temp, m_pos, m_height, m_radius);
-	// std::cerr << temp << " " << m_pos << " " << m_height << " " << m_radius << std::endl;
 	return new_cone;
 }
 
@@ -595,6 +588,7 @@ int Cone::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 	double c = pow(cos(angle), 2) * (delta_p - p_dot_m_d * m_d).length2() - pow(sin(angle) * p_dot_m_d, 2) ; 
 	double roots[2]; 
 	
+	// intersection between the ray and the cone
 	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
 		q = eye + roots[0] * (p_world - eye);
 		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
@@ -614,10 +608,24 @@ int Cone::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 			}
 		}
 	}
-
 	if (retVal) {
 		p.material = m_material;
 		p.normal = q - (m_pos + (q - m_pos).length() / cos(angle) * m_d);
+	}
+
+	// intersection between the ray and the cap
+	Point3D center = m_pos + m_height * m_d;
+	double den = m_d.dot(v);
+	double num;
+	if (den != 0) {
+		num = -m_d.dot(eye - center);
+		double t = num / den;
+		Point3D intersection = eye + t * (p_world - eye);
+		if ((intersection - center).length() <= m_radius && t < p.z_buffer) {
+			p.z_buffer = t;
+			p.normal = m_d;		
+			retVal = 1;
+		}
 	}
 	return retVal;
 }

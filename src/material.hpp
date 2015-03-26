@@ -3,17 +3,16 @@
 
 #include "algebra.hpp"
 
-enum TYPE {NORMAL = 0, REFLECTION, REFRACTION};
-typedef TYPE MATTYPE;
-
 class Material {
 	public:
 		virtual ~Material();
 		virtual void apply_gl() const = 0;
-		virtual MATTYPE getMatType() const = 0;
 		virtual Colour getDiffuseColor() const = 0;
 		virtual Colour getSpecularColor() const = 0;
 		virtual double getShininess() const = 0;
+		virtual double getReflectionRate() const = 0;
+		virtual double getRefractionRate() const = 0;
+		virtual double getRefractionindex() const = 0;
 
 	protected:
 		Material()
@@ -23,15 +22,10 @@ class Material {
 
 class PhongMaterial : public Material {
 	public:
-		PhongMaterial(const Colour& kd, const Colour& ks, double shininess, int type);
+		PhongMaterial(const Colour& kd, const Colour& ks, double shininess, double reflection_rate, double refraction_rate, double refraction_index);
 		virtual ~PhongMaterial();
 
 		virtual void apply_gl() const;
-
-		MATTYPE getMatType() const
-		{
-			return m_type;
-		}
 
 		Colour getDiffuseColor() const
 		{
@@ -46,11 +40,29 @@ class PhongMaterial : public Material {
 			return m_shininess;
 		}
 
+		double getReflectionRate() const
+		{
+			return m_reflection_rate;
+		}
+
+		double getRefractionRate() const
+		{
+			return m_refraction_rate;
+		}
+
+		double getRefractionindex() const
+		{
+			return m_refraction_index;
+		}
+
+
 	private:
 		Colour m_kd;
 		Colour m_ks;
 		double m_shininess;
-		MATTYPE m_type;
+		double m_reflection_rate;
+		double m_refraction_rate;
+		double m_refraction_index;
 };
 
 

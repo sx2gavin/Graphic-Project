@@ -20,6 +20,7 @@ class Primitive {
 		virtual Primitive* clone();
 
 		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p){return 0;}
+		virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D& out_normal){return 0;} 
 
 	protected:
 		Material*  m_material;	
@@ -32,11 +33,13 @@ class Sphere : public Primitive {
 		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
 		virtual void transform(const Matrix4x4 t);
 		virtual Primitive* clone();
-		void addTriangle(std::vector<Point3D>* sphere_vertices, std::vector<Point3D> vertices, int index_1, int index_2, int index_3);
-		void addTriangle(std::vector<Point3D>* sphere_vertices, Point3D point_1, Point3D point_2, Point3D point_3);
+		// virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D out_normal);  
 
 	private:
 		Point3D getMiddlePoint(Point3D a, Point3D b);
+		void addTriangle(std::vector<Point3D>* sphere_vertices, std::vector<Point3D> vertices, int index_1, int index_2, int index_3);
+		void addTriangle(std::vector<Point3D>* sphere_vertices, Point3D point_1, Point3D point_2, Point3D point_3);
+
 		std::vector<Point3D> m_trans_verts;
 		std::vector<Point3D> m_verts;
 		std::vector< std::vector<int> > m_faces;
@@ -62,10 +65,9 @@ class NonhierSphere : public Primitive {
 		{
 		}
 		virtual ~NonhierSphere();
-
 		virtual Primitive* clone();
-
 		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
+		// virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D out_normal);
 
 		Point3D getPosition()
 		{

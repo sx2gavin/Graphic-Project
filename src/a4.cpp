@@ -33,11 +33,13 @@ int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, con
 	pixel temp;
 	pixel p;
 	int retVal = 0;
+	Primitive* hitObject;
 	for (std::list<Primitive*>::const_iterator i = objects.begin(); i != objects.end(); i++) {
 		if ((*i)->rayTracing(eye, p_world, temp)) {
 			retVal = 1;
-			if ( p.z_buffer > temp.z_buffer) {
+			if (temp.z_buffer < p.z_buffer) {
 				p = temp;
+				hitObject = (*i);
 			}
 		}	
 	}
@@ -91,11 +93,11 @@ int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, con
 
 	// recursive ray, adding reflection or refraction
 	if ( recursion_level > 0 ) {
-		if ( p.material->getMatType() == REFLECTION) {
+		if ( p.material->getReflectionRate() > 0 ) {
 			Colour reflected_color(0, 0, 0);
 			reflection = (- camera) - 2 * ((-camera).dot(p.normal)) * p.normal; 
 			if (rayTracing(objects, hitPoint, (hitPoint + reflection), ambient, lights, recursion_level - 1,  reflected_color)) {
-				final_color = final_color + reflected_color * ((double)p.material->getShininess() / 50.0);	
+				final_color = final_color + reflected_color * p.material->getReflectionRate();	
 			}
 		}
 	}

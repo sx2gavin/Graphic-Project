@@ -416,6 +416,15 @@ int NonhierSphere::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 	return retVal;
 }
 
+/*int NonhierSphere::refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D out_normal)
+{
+	if (material->getRefractionRate == 0.0) {
+		return 0;	
+	}	
+	
+	Vector3D t =  
+}*/
+
 NonhierBox::NonhierBox(const Point3D& pos, double size)
 : m_pos(pos), m_size(size)
 {

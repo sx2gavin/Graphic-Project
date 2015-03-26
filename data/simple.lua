@@ -1,11 +1,11 @@
 -- A simple scene with five spheres
 
-mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 25, 1)
-mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 5, 1)
+mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 25, 0.5, 0, 0)
+mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 5, 0.1, 0, 0)
 -- mat3 = gr.material({1.0, 0.6, 0.1}, {0.5, 0.7, 0.5}, 5)
 
-wall_mat = gr.material({0.765, 0.705, 0.482}, {0.5, 0.7, 0.5}, 0, 0)
-desk_mat = gr.material({0.713, 0.608, 0.298}, {0.3, 0.3, 0.3}, 5, 1)
+wall_mat = gr.material({0.765, 0.705, 0.482}, {0.5, 0.7, 0.5}, 0, 0, 0, 0)
+desk_mat = gr.material({0.713, 0.608, 0.298}, {0.3, 0.3, 0.3}, 5, 0.2, 0, 0)
 
 scene_root = gr.node('root')
 

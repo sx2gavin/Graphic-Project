@@ -28,14 +28,14 @@ void render_background(int width, int height, Image *img)
 	}	
 }
 
-int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, const Colour& ambient, const std::list<Light*>& lights, int recursion_level, Colour &final_color)
+int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir, const Colour& ambient, const std::list<Light*>& lights, int recursion_level, Colour &final_color)
 {
 	pixel temp;
 	pixel p;
 	int retVal = 0;
 	Primitive* hitObject;
 	for (std::list<Primitive*>::const_iterator i = objects.begin(); i != objects.end(); i++) {
-		if ((*i)->rayTracing(eye, p_world, temp)) {
+		if ((*i)->rayTracing(ray_org, ray_dir, temp)) {
 			retVal = 1;
 			if (temp.z_buffer < p.z_buffer) {
 				p = temp;
@@ -54,19 +54,22 @@ int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, con
 	Vector3D reflection;
 	float cosAlpha;
 
-	Point3D hitPoint = eye + (p.z_buffer - 0.0001) * (p_world - eye);
-	Vector3D camera = eye - hitPoint;
+	Point3D hitPoint = ray_org + (p.z_buffer - 0.0001) * ray_dir;
+	Vector3D camera = ray_org - hitPoint;
 	camera.normalize();
 	final_color  = ambient * p.material->getDiffuseColor();
 	Vector3D lightDirection;
 
 	// secondary ray, adding shadows and shade.
 	for (std::list<Light*>::const_iterator I = lights.begin(); I != lights.end(); I++) { 
-		if (rayTracingHit(objects, hitPoint, (*I)->position)) {
-			continue;
-		}	
+
 		lightDirection = (*I)->position - hitPoint;
 		distance = lightDirection.length();
+		lightDirection.normalize();
+
+		if (rayTracingHit(objects, hitPoint, lightDirection)) {
+			continue;
+		}	
 		attenuation = 1 / ((*I)->falloff[0] + distance* (*I)->falloff[1] + distance * distance * (*I)->falloff[2]);
 
 		// normal correction	
@@ -75,7 +78,6 @@ int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, con
 		}
 		// diffuse
 		p.normal.normalize();
-		lightDirection.normalize();
 		cosTheta = clamp(p.normal.dot(lightDirection), 0, 1);
 
 		reflection = - lightDirection - 2 * ((-lightDirection).dot(p.normal)) * p.normal;
@@ -96,7 +98,8 @@ int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, con
 		if ( p.material->getReflectionRate() > 0 ) {
 			Colour reflected_color(0, 0, 0);
 			reflection = (- camera) - 2 * ((-camera).dot(p.normal)) * p.normal; 
-			if (rayTracing(objects, hitPoint, (hitPoint + reflection), ambient, lights, recursion_level - 1,  reflected_color)) {
+			reflection.normalize();
+			if (rayTracing(objects, hitPoint, reflection, ambient, lights, recursion_level - 1,  reflected_color)) {
 				final_color = final_color + reflected_color * p.material->getReflectionRate();	
 			}
 		}
@@ -104,12 +107,12 @@ int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, con
 	return retVal;
 }
 
-int rayTracingHit(std::list<Primitive*> &objects, Point3D eye, Point3D p_world)
+int rayTracingHit(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir)
 {
 	pixel temp;
 	int retVal = 0;
 	for (std::list<Primitive*>::const_iterator i = objects.begin(); i != objects.end(); i++) {
-		if ((*i)->rayTracing(eye, p_world, temp)) {
+		if ((*i)->rayTracing(ray_org, ray_dir, temp)) {
 			retVal = 1;
 			break;
 		}	
@@ -181,7 +184,9 @@ void multiProcessing(int from,
 			Colour pixel_color(0, 0, 0);
 
 			// primary ray
-			if (rayTracing(objects, eye, p_world, ambient, lights, RECURSION_LEVEL, pixel_color)) {
+			Vector3D ray_direction = p_world - eye;
+			ray_direction.normalize();
+			if (rayTracing(objects, eye, ray_direction, ambient, lights, RECURSION_LEVEL, pixel_color)) {
 				(*img)(x, y, 0) = pixel_color.R();
 				(*img)(x, y, 1) = pixel_color.G();
 				(*img)(x, y, 2) = pixel_color.B();

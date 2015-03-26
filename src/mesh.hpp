@@ -16,7 +16,7 @@ public:
 
   typedef std::vector<int> Face;
 
-  virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
+  virtual int rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p);
   virtual void transform(const Matrix4x4 t);
   virtual Primitive* clone(); 
   

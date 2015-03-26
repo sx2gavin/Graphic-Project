@@ -8,7 +8,7 @@ Mesh::Mesh(const std::vector<Point3D>& verts,
 {
 }
 
-int Mesh::rayTracing(Point3D eye, Point3D p_world, pixel& p)
+int Mesh::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 {
 	int retVal = 0; 
 	Point3D p0;
@@ -45,26 +45,26 @@ int Mesh::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 			p2 = m_trans_verts[*(J + 2)];
 
 			n = (p1 - p0).cross(p2 - p0);
-			//num = - n.dot(eye - p0);
-			den = n.dot(p_world - eye);
+			//num = - n.dot(ray_org - p0);
+			den = n.dot(ray_dir);
 
 			// if the ray doesn't hit the plane represented by the triangle.
 			if (den == 0) break;
 
 			x1 = p1[0] - p0[0];
 			x2 = p2[0] - p0[0];
-			x3 = - p_world[0] + eye[0];
-			r1 = eye[0] - p0[0];
+			x3 = - ray_dir[0];
+			r1 = ray_org[0] - p0[0];
 
 			y1 = p1[1] - p0[1];
 			y2 = p2[1] - p0[1];
-			y3 = - p_world[1] + eye[1];
-			r2 = eye[1] - p0[1];
+			y3 = - ray_dir[1];
+			r2 = ray_org[1] - p0[1];
 
 			z1 = p1[2] - p0[2];
 			z2 = p2[2] - p0[2];
-			z3 = - p_world[2] + eye[2];
-			r3 = eye[2] - p0[2];
+			z3 = - ray_dir[2];
+			r3 = ray_org[2] - p0[2];
 
 			d = det(x1, x2, x3, y1, y2, y3, z1, z2, z3);
 			d1 = det(r1, x2, x3, r2, y2, y3, r3, z2, z3);
@@ -79,7 +79,7 @@ int Mesh::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 			if ( beta >= 0 && gamma >= 0 && (beta + gamma) <= 1 && t > 0.0) {
 				// the ray hits the triangle. 
 				retVal = 1;
-				if ( p.z_buffer == 0 || p.z_buffer > t ) {
+				if (p.z_buffer > t ) {
 					p.z_buffer = t;
 					p.material = m_material;
 					p.normal = n; 

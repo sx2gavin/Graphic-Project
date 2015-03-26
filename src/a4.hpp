@@ -9,16 +9,16 @@
 void render_background(int width, int height, Image *img);
 
 int rayTracing(std::list<Primitive*> &objects, 
-			   Point3D eye, 
-			   Point3D p_world, 
+			   Point3D ray_org, 
+			   Vector3D ray_dir, 
 			   const Colour& ambient, 
 			   const std::list<Light*>& lights, 
 			   int recursion_level,
 			   Colour &final_color);
 
 int rayTracingHit(std::list<Primitive*> &objects, 
-				  Point3D eye, 
-				  Point3D p_world 
+				  Point3D ray_org, 
+				  Vector3D ray_dir 
 				  );
 
 void multiProcessing(int from, 

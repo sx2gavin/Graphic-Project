@@ -19,7 +19,7 @@ class Primitive {
 		virtual void transform(const Matrix4x4 t){}
 		virtual Primitive* clone();
 
-		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p){return 0;}
+		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p){return 0;}
 		virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D& out_normal){return 0;} 
 
 	protected:
@@ -30,7 +30,7 @@ class Sphere : public Primitive {
 	public:
 		Sphere();
 		virtual ~Sphere();
-		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
+		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p);
 		virtual void transform(const Matrix4x4 t);
 		virtual Primitive* clone();
 		// virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D out_normal);  
@@ -49,7 +49,7 @@ class Cube : public Primitive {
 	public:
 		Cube();
 		virtual ~Cube();
-		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
+		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p);
 		virtual void transform(const Matrix4x4 t);
 		virtual Primitive* clone();
 	private:
@@ -66,7 +66,7 @@ class NonhierSphere : public Primitive {
 		}
 		virtual ~NonhierSphere();
 		virtual Primitive* clone();
-		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
+		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p);
 		// virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D out_normal);
 
 		Point3D getPosition()
@@ -90,7 +90,7 @@ class NonhierBox : public Primitive {
 
 		virtual ~NonhierBox();
 		virtual Primitive* clone();
-		virtual int rayTracing(Point3D eye, Point3D p_world,  pixel& p);
+		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p);
 
 	private:
 		Point3D m_pos;
@@ -105,7 +105,7 @@ class Cone : public Primitive {
 		Cone(const Point3D& d, const Point3D& pos,  double height, double radius);		
 		virtual ~Cone();
 		virtual Primitive* clone();
-		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
+		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p);
 
 	private:
 		Vector3D m_d;
@@ -119,7 +119,7 @@ class Cylinder : public Primitive {
 		Cylinder(const Point3D& d, const Point3D& pos,  double height, double radius);
 		virtual ~Cylinder();
 		virtual Primitive* clone();
-		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
+		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p);
 
 	private:
 		Vector3D m_d;

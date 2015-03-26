@@ -157,7 +157,7 @@ Sphere::~Sphere()
 {
 }
 
-int Sphere::rayTracing (Point3D eye, Point3D p_world,  pixel& p)
+int Sphere::rayTracing (Point3D ray_org, Vector3D ray_dir,  pixel& p)
 {
 	int retVal = 0; 
 	Point3D p0;
@@ -193,25 +193,25 @@ int Sphere::rayTracing (Point3D eye, Point3D p_world,  pixel& p)
 		p2 = *(I + 2);
 
 		n = (p1 - p0).cross(p2 - p0);
-		den = n.dot(p_world - eye);
+		den = n.dot(ray_dir);
 
 		// if the ray doesn't hit the plane represented by the triangle.
 		if (den == 0) continue;
 
 		x1 = p1[0] - p0[0];
 		x2 = p2[0] - p0[0];
-		x3 = - p_world[0] + eye[0];
-		r1 = eye[0] - p0[0];
+		x3 = - ray_dir[0];
+		r1 = ray_org[0] - p0[0];
 
 		y1 = p1[1] - p0[1];
 		y2 = p2[1] - p0[1];
-		y3 = - p_world[1] + eye[1];
-		r2 = eye[1] - p0[1];
+		y3 = - ray_dir[1];
+		r2 = ray_org[1] - p0[1];
 
 		z1 = p1[2] - p0[2];
 		z2 = p2[2] - p0[2];
-		z3 = - p_world[2] + eye[2];
-		r3 = eye[2] - p0[2];
+		z3 = - ray_dir[2];
+		r3 = ray_org[2] - p0[2];
 
 		d = det(x1, x2, x3, y1, y2, y3, z1, z2, z3);
 		d1 = det(r1, x2, x3, r2, y2, y3, r3, z2, z3);
@@ -286,7 +286,7 @@ Cube::~Cube()
 {
 }
 
-int Cube::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
+int Cube::rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p)
 {
 	int retVal = 0; 
 	Point3D p0;
@@ -322,25 +322,25 @@ int Cube::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 			p2 = m_trans_verts[*(J + 2)];
 
 			n = (p1 - p0).cross(p2 - p0);
-			den = n.dot(p_world - eye);
+			den = n.dot(ray_dir);
 
 			// if the ray doesn't hit the plane represented by the triangle.
 			if (den == 0) break;
 
 			x1 = p1[0] - p0[0];
 			x2 = p2[0] - p0[0];
-			x3 = - p_world[0] + eye[0];
-			r1 = eye[0] - p0[0];
+			x3 = - ray_dir[0];
+			r1 = ray_org[0] - p0[0];
 
 			y1 = p1[1] - p0[1];
 			y2 = p2[1] - p0[1];
-			y3 = - p_world[1] + eye[1];
-			r2 = eye[1] - p0[1];
+			y3 = - ray_dir[1];
+			r2 = ray_org[1] - p0[1];
 
 			z1 = p1[2] - p0[2];
 			z2 = p2[2] - p0[2];
-			z3 = - p_world[2] + eye[2];
-			r3 = eye[2] - p0[2];
+			z3 = - ray_dir[2];
+			r3 = ray_org[2] - p0[2];
 
 			d = det(x1, x2, x3, y1, y2, y3, z1, z2, z3);
 			d1 = det(r1, x2, x3, r2, y2, y3, r3, z2, z3);
@@ -358,7 +358,6 @@ int Cube::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 					p.z_buffer = t;
 					p.material = m_material;
 					p.normal = n;
-					
 				}
 				break;
 			}
@@ -392,12 +391,12 @@ Primitive* NonhierSphere::clone()
 }
 
 
-int NonhierSphere::rayTracing(Point3D eye, Point3D p_world, pixel& p) 
+int NonhierSphere::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p) 
 {
 	int retVal = 0;
-	double a = (p_world - eye).dot(p_world - eye);
-	double b = 2 * (p_world - eye).dot(eye - m_pos);
-	double c = (eye - m_pos).dot(eye - m_pos) - m_radius * m_radius;
+	double a = ray_dir.dot(ray_dir);
+	double b = 2 * ray_dir.dot(ray_org - m_pos);
+	double c = (ray_org - m_pos).dot(ray_org - m_pos) - m_radius * m_radius;
 	double roots[2]; 
 	
 	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
@@ -410,7 +409,7 @@ int NonhierSphere::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 
 	if (retVal) {
 		p.material = m_material;
-		p.normal = eye + p.z_buffer * (p_world - eye) - m_pos;
+		p.normal = ray_org + p.z_buffer * ray_dir - m_pos;
 	}
 
 	return retVal;
@@ -482,7 +481,7 @@ Primitive* NonhierBox::clone()
 	return new_nhbox;
 }
 
-int NonhierBox::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
+int NonhierBox::rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p)
 {
 	
 	int retVal = 0; 
@@ -518,25 +517,25 @@ int NonhierBox::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 			p2 = m_verts[*(J + 2)];
 
 			n = (p1 - p0).cross(p2 - p0);
-			den = n.dot(p_world - eye);
+			den = n.dot(ray_dir);
 
 			// if the ray doesn't hit the plane represented by the triangle.
 			if (den == 0) break;
 
 			x1 = p1[0] - p0[0];
 			x2 = p2[0] - p0[0];
-			x3 = - p_world[0] + eye[0];
-			r1 = eye[0] - p0[0];
+			x3 = - ray_dir[0];
+			r1 = ray_org[0] - p0[0];
 
 			y1 = p1[1] - p0[1];
 			y2 = p2[1] - p0[1];
-			y3 = - p_world[1] + eye[1];
-			r2 = eye[1] - p0[1];
+			y3 = - ray_dir[1];
+			r2 = ray_org[1] - p0[1];
 
 			z1 = p1[2] - p0[2];
 			z2 = p2[2] - p0[2];
-			z3 = - p_world[2] + eye[2];
-			r3 = eye[2] - p0[2];
+			z3 = - ray_dir[2];
+			r3 = ray_org[2] - p0[2];
 
 			d = det(x1, x2, x3, y1, y2, y3, z1, z2, z3);
 			d1 = det(r1, x2, x3, r2, y2, y3, r3, z2, z3);
@@ -554,7 +553,6 @@ int NonhierBox::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 					p.z_buffer = t;
 					p.material = m_material;
 					p.normal = n;
-					
 				}
 				break;
 			}
@@ -582,13 +580,13 @@ Primitive* Cone::clone()
 	return new_cone;
 }
 
-int Cone::rayTracing(Point3D eye, Point3D p_world, pixel& p)
+int Cone::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 {
 	int retVal = 0;
 	Point3D q;
 	double angle = atan(m_radius / m_height);
-	Vector3D v = p_world - eye;
-	Vector3D delta_p = eye - m_pos;
+	Vector3D v = ray_dir;
+	Vector3D delta_p = ray_org - m_pos;
 	double v_dot_m_d = v.dot(m_d);
 	double p_dot_m_d = delta_p.dot(m_d);
 	
@@ -599,18 +597,18 @@ int Cone::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 	
 	// intersection between the ray and the cone
 	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
-		q = eye + roots[0] * (p_world - eye);
+		q = ray_org + roots[0] * ray_dir;
 		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 			p.z_buffer = roots[0];
 			retVal = 1;
 		}
 	} else if (quadraticRoots(a, b, c, roots) > 1 && std::min(roots[0], roots[1]) > 0) {
-		q = eye + std::min(roots[0], roots[1]) * (p_world - eye);
+		q = ray_org + std::min(roots[0], roots[1]) * ray_dir;
 		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 			p.z_buffer = std::min(roots[0], roots[1]);
 			retVal = 1;
 		} else {
-			q = eye + std::max(roots[0], roots[1]) * (p_world - eye);
+			q = ray_org + std::max(roots[0], roots[1]) * ray_dir;
 			if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 				p.z_buffer = std::max(roots[0], roots[1]);
 				retVal = 1;
@@ -627,9 +625,9 @@ int Cone::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 	double den = m_d.dot(v);
 	double num;
 	if (den != 0) {
-		num = -m_d.dot(eye - center);
+		num = -m_d.dot(ray_org - center);
 		double t = num / den;
-		Point3D intersection = eye + t * (p_world - eye);
+		Point3D intersection = ray_org + t * ray_dir;
 		if ((intersection - center).length() <= m_radius && t < p.z_buffer && t > 0) {
 			p.z_buffer = t;
 			p.normal = m_d;		
@@ -656,12 +654,12 @@ Primitive* Cylinder::clone()
 	return new_cylinder;
 }
 
-int Cylinder::rayTracing(Point3D eye, Point3D p_world, pixel& p)
+int Cylinder::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 {
 	int retVal = 0;
 	Point3D q;
-	Vector3D v = p_world - eye;
-	Vector3D delta_p = eye - m_pos;
+	Vector3D v = ray_dir;
+	Vector3D delta_p = ray_org - m_pos;
 	double v_dot_m_d = v.dot(m_d);
 	double p_dot_m_d = delta_p.dot(m_d);
 	
@@ -673,18 +671,18 @@ int Cylinder::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 	
 	// intersection between the ray and the cone
 	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
-		q = eye + roots[0] * (p_world - eye);
+		q = ray_org + roots[0] * ray_dir;
 		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 			p.z_buffer = roots[0];
 			retVal = 1;
 		}
 	} else if (quadraticRoots(a, b, c, roots) > 1 && std::min(roots[0], roots[1]) > 0) {
-		q = eye + std::min(roots[0], roots[1]) * (p_world - eye);
+		q = ray_org + std::min(roots[0], roots[1]) * ray_dir;
 		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 			p.z_buffer = std::min(roots[0], roots[1]);
 			retVal = 1;
 		} else {
-			q = eye + std::max(roots[0], roots[1]) * (p_world - eye);
+			q = ray_org + std::max(roots[0], roots[1]) * ray_dir;
 			if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 				p.z_buffer = std::max(roots[0], roots[1]);
 				retVal = 1;
@@ -701,18 +699,18 @@ int Cylinder::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 	double num;
 	if (den != 0) {
 		// top
-		num = m_d.dot(center - eye);
+		num = m_d.dot(center - ray_org);
 		double t = num / den;
-		Point3D intersection = eye + t * (p_world - eye);
+		Point3D intersection = ray_org + t * ray_dir;
 		if ((intersection - center).length() <= m_radius && t < p.z_buffer && t > 0) {
 			p.z_buffer = t;
 			p.normal = - m_d;		
 			retVal = 1;
 		}
 		// bottom	
-		num = m_d.dot(m_pos - eye); 
+		num = m_d.dot(m_pos - ray_org); 
 		t = num / den;
-		intersection = eye + t * (p_world - eye);
+		intersection = ray_org + t * ray_dir;
 		if ((intersection - m_pos).length() <= m_radius && t < p.z_buffer && t > 0) {
 			p.z_buffer = t;
 			p.normal = -m_d;		

@@ -95,7 +95,7 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 
 	// recursive ray, adding reflection or refraction
 	if ( recursion_level > 0 ) {
-		if ( p.material->getReflectionRate() > 0 ) {
+		if ( p.material->getReflectionRate() > 0.0 ) {
 			Colour reflected_color(0, 0, 0);
 			reflection = (- camera) - 2 * ((-camera).dot(p.normal)) * p.normal; 
 			reflection.normalize();
@@ -103,6 +103,16 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 				final_color = final_color + reflected_color * p.material->getReflectionRate();	
 			}
 		}
+
+		Point3D out;
+		Vector3D out_normal;
+		hitPoint = ray_org + p.z_buffer * ray_dir;	
+		if (hitObject->refractiveRay(hitPoint, ray_dir, p.normal, out, out_normal)) {
+			Colour refracted_color(0.0, 0.0, 0.0);
+			if (rayTracing(objects, out + 0.001 * out_normal, out_normal, ambient, lights, recursion_level - 1, refracted_color)) {
+				final_color = final_color + refracted_color * p.material->getRefractionRate();
+			}
+		}	
 	}
 	return retVal;
 }

@@ -12,7 +12,7 @@ class Material {
 		virtual double getShininess() const = 0;
 		virtual double getReflectionRate() const = 0;
 		virtual double getRefractionRate() const = 0;
-		virtual double getRefractionindex() const = 0;
+		virtual double getRefractionIndex() const = 0;
 
 	protected:
 		Material()
@@ -50,7 +50,7 @@ class PhongMaterial : public Material {
 			return m_refraction_rate;
 		}
 
-		double getRefractionindex() const
+		double getRefractionIndex() const
 		{
 			return m_refraction_index;
 		}

@@ -1,6 +1,6 @@
 -- A simple scene with five spheres
 
-mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 25, 0.5, 0, 0)
+mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 25, 0, 1, 1.66)
 mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 5, 0.1, 0, 0)
 -- mat3 = gr.material({1.0, 0.6, 0.1}, {0.5, 0.7, 0.5}, 5)
 
@@ -9,17 +9,21 @@ desk_mat = gr.material({0.713, 0.608, 0.298}, {0.3, 0.3, 0.3}, 5, 0.2, 0, 0)
 
 scene_root = gr.node('root')
 
-s1 = gr.nh_sphere('s1', {-10, 0, 0}, 10)
+s1 = gr.nh_sphere('s1', {0, 0, 20}, 10)
 scene_root:add_child(s1)
 s1:set_material(mat1)
 
-s2 = gr.nh_sphere('s2', {10, 0, 0}, 10)
+s2 = gr.cone('s2', {0, -1, 0}, {0, 0, 0}, 5, 2)
 scene_root:add_child(s2)
 s2:set_material(mat2)
 
-s3 = gr.nh_sphere('s3', {0, -7, 30}, 3)
-scene_root:add_child(s3)
-s3:set_material(mat2)
+-- s2 = gr.nh_sphere('s2', {10, 0, 0}, 10)
+-- scene_root:add_child(s2)
+-- s2:set_material(mat2)
+-- 
+-- s3 = gr.nh_sphere('s3', {0, -7, 30}, 3)
+-- scene_root:add_child(s3)
+-- s3:set_material(mat2)
 
 wall = gr.mesh('wall', {
 		{1, 1, 0},

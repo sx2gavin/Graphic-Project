@@ -1,11 +1,11 @@
 -- A simple scene with five spheres
 
-mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 25, 1)
-mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 5, 1)
+mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 25, 0.5, 0, 0)
+mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 5, 0.1, 0, 0)
 -- mat3 = gr.material({1.0, 0.6, 0.1}, {0.5, 0.7, 0.5}, 5)
 
-wall_mat = gr.material({0.765, 0.705, 0.482}, {0.5, 0.7, 0.5}, 0, 0)
-desk_mat = gr.material({0.713, 0.608, 0.298}, {0.3, 0.3, 0.3}, 5, 1)
+wall_mat = gr.material({0.765, 0.705, 0.482}, {0.5, 0.7, 0.5}, 0, 0, 0, 0)
+desk_mat = gr.material({0.713, 0.608, 0.298}, {0.3, 0.3, 0.3}, 5, 0.2, 0, 0)
 
 scene_root = gr.node('root')
 
@@ -32,7 +32,7 @@ wall = gr.mesh('wall', {
 scene_root:add_child(wall)
 wall:set_material(wall_mat) 
 wall:translate(0, 20, -10)
-wall:scale(60, 30, 30)
+wall:scale(40, 30, 30)
 
 desk = gr.mesh('desk', {
 		   { -1, 0, -1 }, 
@@ -45,12 +45,12 @@ desk = gr.mesh('desk', {
 scene_root:add_child(desk)
 desk:set_material(desk_mat)
 desk:translate(0, -10, 30)
-desk:scale(60, 1, 50)
+desk:scale(40, 1, 50)
 
 
 white_light_1 = gr.light({0, 100.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 white_light_2 = gr.light({100.0, 0.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 
-gr.render(scene_root, 'reflection.png', 1960, 1080,
+gr.render(scene_root, 'reflection.png', 1024, 1024,
 	  {0, 0, 100}, {0, 0, -1}, {0, 1, 0}, 50,
 	  {0.3, 0.3, 0.3}, {white_light_1, white_light_2})

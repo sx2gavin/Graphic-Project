@@ -405,7 +405,10 @@ int NonhierSphere::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 	} else if (quadraticRoots(a, b, c, roots) > 1 && std::min(roots[0], roots[1]) > 0) {
 		p.z_buffer = std::min(roots[0], roots[1]);
 		retVal = 1;
-	}
+	} else if (std::min(roots[0], roots[1]) <= 0.0 && std::max(roots[0], roots[1]) > 0.0) {
+		p.z_buffer = std::max(roots[0], roots[1]);
+		retVal = 1;
+	}	
 
 	if (retVal) {
 		p.material = m_material;
@@ -415,14 +418,28 @@ int NonhierSphere::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 	return retVal;
 }
 
-/*int NonhierSphere::refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D out_normal)
+int NonhierSphere::refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D& out_normal)
 {
-	if (material->getRefractionRate == 0.0) {
+	if (m_material->getRefractionRate() == 0.0) {
 		return 0;	
 	}	
-	
-	Vector3D t =  
-}*/
+
+	Vector3D t = ggRefract(in_normal, n, 1.0, m_material->getRefractionIndex());
+	t.normalize();
+
+	pixel p;
+	// make sure the starting point is a little bit inside of the object so it won't hit the surface.
+	Point3D start = in + 0.001 * t;
+	rayTracing(start, t, p);
+	out = in + p.z_buffer * t;
+	// normal correction	
+	if (p.normal.dot(t) > 0) {
+		p.normal = -p.normal;
+	}
+	out_normal = ggRefract(t, p.normal, m_material->getRefractionIndex(), 1.0);
+	out_normal.normalize();
+	return 1;
+}
 
 NonhierBox::NonhierBox(const Point3D& pos, double size)
 : m_pos(pos), m_size(size)
@@ -439,7 +456,7 @@ NonhierBox::NonhierBox(const Point3D& pos, double size)
 	for (int i = 0; i < 6; i++) {
 		m_faces[i].resize(4);
 	}
-	
+
 	m_faces[0][0] = 0;
 	m_faces[0][1] = 1;
 	m_faces[0][2] = 3;
@@ -449,7 +466,7 @@ NonhierBox::NonhierBox(const Point3D& pos, double size)
 	m_faces[1][1] = 2;
 	m_faces[1][2] = 6;
 	m_faces[1][3] = 4;
-		
+
 	m_faces[2][0] = 0;
 	m_faces[2][1] = 1;
 	m_faces[2][2] = 5;
@@ -483,7 +500,7 @@ Primitive* NonhierBox::clone()
 
 int NonhierBox::rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p)
 {
-	
+
 	int retVal = 0; 
 	Point3D p0;
 	Point3D p1;
@@ -509,7 +526,7 @@ int NonhierBox::rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p)
 	float beta;
 	float gamma;
 	float t;
-		
+
 	for (std::vector< std::vector<int> >::const_iterator I = m_faces.begin(); I != m_faces.end(); ++I) {
 		for (std::vector<int>::const_iterator J = I->begin(); J != I->end() - 2; ++J) {
 			p0 = m_verts[(*I)[0]];
@@ -589,12 +606,12 @@ int Cone::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 	Vector3D delta_p = ray_org - m_pos;
 	double v_dot_m_d = v.dot(m_d);
 	double p_dot_m_d = delta_p.dot(m_d);
-	
+
 	double a = pow(cos(angle), 2) * (v - v_dot_m_d * m_d).length2() - pow(sin(angle) * v_dot_m_d, 2);
 	double b = 2 * pow(cos(angle), 2) * (v - v_dot_m_d * m_d).dot(delta_p - p_dot_m_d * m_d) - 2 * pow(sin(angle), 2) * v_dot_m_d * p_dot_m_d;
 	double c = pow(cos(angle), 2) * (delta_p - p_dot_m_d * m_d).length2() - pow(sin(angle) * p_dot_m_d, 2) ; 
 	double roots[2]; 
-	
+
 	// intersection between the ray and the cone
 	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
 		q = ray_org + roots[0] * ray_dir;
@@ -662,13 +679,13 @@ int Cylinder::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 	Vector3D delta_p = ray_org - m_pos;
 	double v_dot_m_d = v.dot(m_d);
 	double p_dot_m_d = delta_p.dot(m_d);
-	
+
 	double a = (v - v_dot_m_d * m_d).length2();
 	double b = 2 * (v - v_dot_m_d * m_d).dot(delta_p - p_dot_m_d * m_d); 
 	double c = (delta_p - p_dot_m_d * m_d).length2() - pow(m_radius, 2); 
 	double roots[2]; 
 	p.material = m_material;
-	
+
 	// intersection between the ray and the cone
 	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
 		q = ray_org + roots[0] * ray_dir;

@@ -212,6 +212,7 @@ inline Vector3D cross(const Vector3D& a, const Vector3D& b)
   return a.cross(b);
 }
 
+
 inline std::ostream& operator <<(std::ostream& os, const Point2D& p)
 {
   return os << "p<" << p[0] << "," << p[1] << ">";
@@ -492,5 +493,10 @@ float det(float a11, float a12,float a13,float a21,float a22,float a23,float a31
 inline float clamp(float x, float a, float b)
 {
 	return x < a ? a : (x > b ? b : x);
+}
+
+inline Vector3D ggRefract(const Vector3D& in, const Vector3D& n, const double n_i, const double n_t)
+{
+	return ((- n_i / n_t * in.dot(n) - sqrt(1.0 - pow(n_i / n_t, 2) * (1.0 - pow(in.dot(n), 2)))) * n + n_i / n_t * in);
 }
 #endif // CS488_ALGEBRA_HPP

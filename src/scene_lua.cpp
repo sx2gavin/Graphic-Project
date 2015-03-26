@@ -231,7 +231,7 @@ int gr_nh_box_cmd(lua_State* L)
 }
 
 // Create a Cone node
-	extern "C"
+extern "C"
 int gr_cone_cmd(lua_State* L)
 {
 	GRLUA_DEBUG_CALL;
@@ -251,6 +251,34 @@ int gr_cone_cmd(lua_State* L)
 	double radius = luaL_checknumber(L, 5);
 
 	data->node = new GeometryNode(name, new Cone(d, pos, height, radius));
+
+	luaL_getmetatable(L, "gr.node");
+	lua_setmetatable(L, -2);
+
+	return 1;
+}	
+
+// Create a Cylinder node
+extern "C"
+int gr_cylinder_cmd(lua_State* L)
+{
+	GRLUA_DEBUG_CALL;
+
+	gr_node_ud* data = (gr_node_ud*)lua_newuserdata(L, sizeof(gr_node_ud));
+	data->node = 0;
+
+	const char* name = luaL_checkstring(L, 1);
+
+	Point3D d;
+	get_tuple(L, 2, &d[0], 3);
+
+	Point3D pos;
+	get_tuple(L, 3, &pos[0], 3);
+
+	double height = luaL_checknumber(L, 4);
+	double radius = luaL_checknumber(L, 5);
+
+	data->node = new GeometryNode(name, new Cylinder(d, pos, height, radius));
 
 	luaL_getmetatable(L, "gr.node");
 	lua_setmetatable(L, -2);
@@ -401,16 +429,17 @@ int gr_material_cmd(lua_State* L)
 
 	gr_material_ud* data = (gr_material_ud*)lua_newuserdata(L, sizeof(gr_material_ud));
 	data->material = 0;
-
+	
 	double kd[3], ks[3];
 	get_tuple(L, 1, kd, 3);
 	get_tuple(L, 2, ks, 3);
 
 	double shininess = luaL_checknumber(L, 3);
+	int type = luaL_checknumber(L, 4);
 
 	data->material = new PhongMaterial(Colour(kd[0], kd[1], kd[2]),
 			Colour(ks[0], ks[1], ks[2]),
-			shininess);
+			shininess, type);
 
 	luaL_newmetatable(L, "gr.material");
 	lua_setmetatable(L, -2);
@@ -570,6 +599,7 @@ static const luaL_reg grlib_functions[] = {
 	{"render", gr_render_cmd},
 	// Added for the project
 	{"cone", gr_cone_cmd},
+	{"cylinder", gr_cylinder_cmd},
 	{0, 0}
 };
 

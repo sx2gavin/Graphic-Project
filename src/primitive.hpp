@@ -100,7 +100,7 @@ class NonhierBox : public Primitive {
 
 class Cone : public Primitive {
 	public:
-		Cone(const Point3D& d, const Point3D& pos,  double m_height, double m_radius);		
+		Cone(const Point3D& d, const Point3D& pos,  double height, double radius);		
 		virtual ~Cone();
 		virtual Primitive* clone();
 		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
@@ -112,4 +112,17 @@ class Cone : public Primitive {
 		double m_radius;
 };
 
+class Cylinder : public Primitive {
+	public:
+		Cylinder(const Point3D& d, const Point3D& pos,  double height, double radius);
+		virtual ~Cylinder();
+		virtual Primitive* clone();
+		virtual int rayTracing(Point3D eye, Point3D p_world, pixel& p);
+
+	private:
+		Vector3D m_d;
+		Point3D m_pos;
+		double m_height;
+		double m_radius;
+};
 #endif

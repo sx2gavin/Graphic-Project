@@ -225,7 +225,7 @@ int Sphere::rayTracing (Point3D eye, Point3D p_world,  pixel& p)
 		if ( beta >= 0 && gamma >= 0 && (beta + gamma) <= 1 && t > 0.0) {
 			// the ray hits the triangle. 
 			retVal = 1;
-			if ( p.z_buffer == 0 || p.z_buffer > t) {
+			if ( p.z_buffer > t) {
 				p.z_buffer = t;
 				p.material = m_material;
 				p.normal = n;
@@ -354,7 +354,7 @@ int Cube::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 			if ( beta >= 0 && gamma >= 0 && (beta + gamma) <= 1 && t > 0.0) {
 				// the ray hits the triangle. 
 				retVal = 1;
-				if ( p.z_buffer == 0 || p.z_buffer > t) {
+				if ( p.z_buffer > t) {
 					p.z_buffer = t;
 					p.material = m_material;
 					p.normal = n;
@@ -541,7 +541,7 @@ int NonhierBox::rayTracing(Point3D eye, Point3D p_world,  pixel& p)
 			if ( beta >= 0 && gamma >= 0 && (beta + gamma) <= 1 && t > 0.0) {
 				// the ray hits the triangle. 
 				retVal = 1;
-				if ( p.z_buffer == 0 || p.z_buffer > t) {
+				if ( p.z_buffer > t) {
 					p.z_buffer = t;
 					p.material = m_material;
 					p.normal = n;
@@ -610,7 +610,7 @@ int Cone::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 	}
 	if (retVal) {
 		p.material = m_material;
-		p.normal = q - (m_pos + (q - m_pos).length() / cos(angle) * m_d);
+		p.normal = q - (m_pos + (q - m_pos).dot(m_d) * m_d);
 	}
 
 	// intersection between the ray and the cap
@@ -621,9 +621,92 @@ int Cone::rayTracing(Point3D eye, Point3D p_world, pixel& p)
 		num = -m_d.dot(eye - center);
 		double t = num / den;
 		Point3D intersection = eye + t * (p_world - eye);
-		if ((intersection - center).length() <= m_radius && t < p.z_buffer) {
+		if ((intersection - center).length() <= m_radius && t < p.z_buffer && t > 0) {
 			p.z_buffer = t;
 			p.normal = m_d;		
+			retVal = 1;
+		}
+	}
+	return retVal;
+}
+
+Cylinder::Cylinder(const Point3D& d, const Point3D& pos,  double height, double radius):m_pos(pos), m_height(height), m_radius(radius) 
+{
+	m_d[0] = d[0];
+	m_d[1] = d[1];
+	m_d[2] = d[2];	
+	m_d.normalize();
+}
+
+Cylinder::~Cylinder() {}
+
+Primitive* Cylinder::clone()
+{
+	Point3D temp(m_d[0], m_d[1], m_d[2]);
+	Cylinder *new_cylinder = new Cylinder(temp, m_pos, m_height, m_radius);
+	return new_cylinder;
+}
+
+int Cylinder::rayTracing(Point3D eye, Point3D p_world, pixel& p)
+{
+	int retVal = 0;
+	Point3D q;
+	Vector3D v = p_world - eye;
+	Vector3D delta_p = eye - m_pos;
+	double v_dot_m_d = v.dot(m_d);
+	double p_dot_m_d = delta_p.dot(m_d);
+	
+	double a = (v - v_dot_m_d * m_d).length2();
+	double b = 2 * (v - v_dot_m_d * m_d).dot(delta_p - p_dot_m_d * m_d); 
+	double c = (delta_p - p_dot_m_d * m_d).length2() - pow(m_radius, 2); 
+	double roots[2]; 
+	p.material = m_material;
+	
+	// intersection between the ray and the cone
+	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
+		q = eye + roots[0] * (p_world - eye);
+		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+			p.z_buffer = roots[0];
+			retVal = 1;
+		}
+	} else if (quadraticRoots(a, b, c, roots) > 1 && std::min(roots[0], roots[1]) > 0) {
+		q = eye + std::min(roots[0], roots[1]) * (p_world - eye);
+		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+			p.z_buffer = std::min(roots[0], roots[1]);
+			retVal = 1;
+		} else {
+			q = eye + std::max(roots[0], roots[1]) * (p_world - eye);
+			if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+				p.z_buffer = std::max(roots[0], roots[1]);
+				retVal = 1;
+			}
+		}
+	}
+	if (retVal) {
+		p.normal = q - (m_pos + (q - m_pos).dot(m_d) * m_d);
+	}
+
+	// intersection between the ray and the cap
+	Point3D center = m_pos + m_height * m_d;
+	double den = m_d.dot(v);
+	double num;
+	if (den != 0) {
+		// top
+		num = m_d.dot(center - eye);
+		double t = num / den;
+		Point3D intersection = eye + t * (p_world - eye);
+		if ((intersection - center).length() <= m_radius && t < p.z_buffer && t > 0) {
+			p.z_buffer = t;
+			p.normal = - m_d;		
+			retVal = 1;
+		}
+		// bottom	
+		num = m_d.dot(m_pos - eye); 
+		t = num / den;
+		intersection = eye + t * (p_world - eye);
+		if ((intersection - m_pos).length() <= m_radius && t < p.z_buffer && t > 0) {
+			p.z_buffer = t;
+			p.normal = -m_d;		
 			retVal = 1;
 		}
 	}

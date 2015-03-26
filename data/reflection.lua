@@ -32,7 +32,7 @@ wall = gr.mesh('wall', {
 scene_root:add_child(wall)
 wall:set_material(wall_mat) 
 wall:translate(0, 20, -10)
-wall:scale(40, 30, 30)
+wall:scale(60, 30, 30)
 
 desk = gr.mesh('desk', {
 		   { -1, 0, -1 }, 
@@ -45,12 +45,12 @@ desk = gr.mesh('desk', {
 scene_root:add_child(desk)
 desk:set_material(desk_mat)
 desk:translate(0, -10, 30)
-desk:scale(40, 1, 50)
+desk:scale(60, 1, 50)
 
 
 white_light_1 = gr.light({0, 100.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 white_light_2 = gr.light({100.0, 0.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 
-gr.render(scene_root, 'simple.png', 1024, 1024,
+gr.render(scene_root, 'reflection.png', 1960, 1080,
 	  {0, 0, 100}, {0, 0, -1}, {0, 1, 0}, 50,
 	  {0.3, 0.3, 0.3}, {white_light_1, white_light_2})

@@ -8,9 +8,18 @@
 
 void render_background(int width, int height, Image *img);
 
-int rayTracing(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, pixel& p);
+int rayTracing(std::list<Primitive*> &objects, 
+			   Point3D eye, 
+			   Point3D p_world, 
+			   const Colour& ambient, 
+			   const std::list<Light*>& lights, 
+			   int recursion_level,
+			   Colour &final_color);
 
-int rayTracingHit(std::list<Primitive*> &objects, Point3D eye, Point3D p_world, pixel& p);
+int rayTracingHit(std::list<Primitive*> &objects, 
+				  Point3D eye, 
+				  Point3D p_world 
+				  );
 
 void multiProcessing(int from, 
 			         int to, 

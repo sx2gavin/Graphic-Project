@@ -423,21 +423,27 @@ int NonhierSphere::refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Poi
 	if (m_material->getRefractionRate() == 0.0) {
 		return 0;	
 	}	
-
+	// std::cerr << "in_normal: " << in_normal << "; n: " << n << std::endl;
 	Vector3D t = ggRefract(in_normal, n, 1.0, m_material->getRefractionIndex());
 	t.normalize();
+
+	// std::cerr << t << std::endl;
 
 	pixel p;
 	// make sure the starting point is a little bit inside of the object so it won't hit the surface.
 	Point3D start = in + 0.001 * t;
 	rayTracing(start, t, p);
 	out = in + p.z_buffer * t;
+	// std::cerr << "out: " << out << std::endl;
 	// normal correction	
-	if (p.normal.dot(t) > 0) {
+	// std::cerr << p.normal << std::endl;
+	if (p.normal.dot(t) > 0 ) {
 		p.normal = -p.normal;
 	}
+	p.normal.normalize();
 	out_normal = ggRefract(t, p.normal, m_material->getRefractionIndex(), 1.0);
 	out_normal.normalize();
+	// std::cerr << "out_normal:" << out_normal << std::endl << std::endl;
 	return 1;
 }
 

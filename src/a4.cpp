@@ -7,7 +7,7 @@
 #include <ctime>
 
 #define RECURSION_LEVEL 3
-#define NUM_THREADS 1
+#define NUM_THREADS 6
 
 void render_background(int width, int height, Image *img) 
 {
@@ -109,7 +109,7 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 		hitPoint = ray_org + p.z_buffer * ray_dir;	
 		if (hitObject->refractiveRay(hitPoint, ray_dir, p.normal, out, out_normal)) {
 			Colour refracted_color(0.0, 0.0, 0.0);
-			if (rayTracing(objects, out + 0.001 * out_normal, out_normal, ambient, lights, recursion_level - 1, refracted_color)) {
+			if (rayTracing(objects, out + 0.01 * out_normal, out_normal, ambient, lights, 0, refracted_color)) {
 				final_color = final_color + refracted_color * p.material->getRefractionRate();
 			}
 		}	

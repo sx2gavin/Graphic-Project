@@ -10,7 +10,7 @@ PhongMaterial::PhongMaterial(const Colour& kd, const Colour& ks, double shinines
 	m_shininess(shininess), 
 	m_reflection_rate(reflection_rate),
 	m_refraction_rate(refraction_rate),
-	m_refraction_index(refraction_rate)
+	m_refraction_index(refraction_index)
 {
 }
 

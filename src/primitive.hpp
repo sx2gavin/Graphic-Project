@@ -20,9 +20,18 @@ class Primitive {
 		virtual Primitive* clone();
 
 		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p){return 0;}
-		virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D& out_normal){return 0;} 
+		virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D& out_normal);
+		virtual void addTexture(const std::string& filename, std::vector<Point3D> verts){}
+
+		void setIdName(int id, std::string name)
+		{
+			m_id = id;
+			m_name = name;
+		}
 
 	protected:
+		int m_id;
+		std::string m_name;
 		Material*  m_material;	
 };
 
@@ -33,7 +42,6 @@ class Sphere : public Primitive {
 		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p);
 		virtual void transform(const Matrix4x4 t);
 		virtual Primitive* clone();
-		// virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D out_normal);  
 
 	private:
 		Point3D getMiddlePoint(Point3D a, Point3D b);
@@ -67,7 +75,6 @@ class NonhierSphere : public Primitive {
 		virtual ~NonhierSphere();
 		virtual Primitive* clone();
 		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p);
-		virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D& out_normal);
 
 		Point3D getPosition()
 		{

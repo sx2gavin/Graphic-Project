@@ -4,7 +4,8 @@
 Mesh::Mesh(const std::vector<Point3D>& verts,
            const std::vector< std::vector<int> >& faces)
   : m_verts(verts),
-    m_faces(faces)
+    m_faces(faces),
+	m_texture_file("")
 {
 }
 
@@ -102,7 +103,18 @@ void Mesh::transform(const Matrix4x4 t)
 Primitive* Mesh::clone()
 {
 	Mesh* new_mesh = new Mesh(m_verts, m_faces);
+	new_mesh->addTexture(m_texture_file, m_map);
 	return new_mesh;
+}
+
+void Mesh::addTexture(const std::string& filename, std::vector<Point3D> verts)
+{
+	m_texture_file = filename;
+	if (!m_texture.loadPng(filename)) {
+		std::cerr << "ERROR: cannot load picture to texture." << std::endl;
+		return;
+	}	
+	m_map = verts;
 }
 
 std::ostream& operator<<(std::ostream& out, const Mesh& mesh)

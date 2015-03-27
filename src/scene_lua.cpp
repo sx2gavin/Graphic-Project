@@ -563,6 +563,40 @@ int gr_node_rotate_cmd(lua_State* L)
 	return 0;
 }
 
+// add the texture to a certain node.
+
+	extern "C"
+int gr_node_add_texture_cmd(lua_State* L)
+{
+	GRLUA_DEBUG_CALL;
+
+	gr_node_ud* selfdata = (gr_node_ud*)luaL_checkudata(L, 1, "gr.node");
+	luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+
+	SceneNode* self = selfdata->node;
+
+	std::vector<Point3D> verts;
+	const char* filename = luaL_checkstring(L, 1);
+
+	luaL_checktype(L, 2, LUA_TTABLE);
+	int vert_count = luaL_getn(L, 2);
+
+	luaL_argcheck(L, vert_count >= 1, 2, "Tuple of vertices expected");
+
+	for (int i = 1; i <= vert_count; i++) {
+		lua_rawgeti(L, 2, i);
+
+		Point3D vertex;
+		get_tuple(L, -1, &vertex[0], 3);
+
+		verts.push_back(vertex);
+		lua_pop(L, 1);
+	}
+	
+	self->addTexture(filename, verts);
+	return 0;
+}
+
 // Garbage collection function for lua.
 	extern "C"
 int gr_node_gc_cmd(lua_State* L)
@@ -625,6 +659,8 @@ static const luaL_reg grlib_node_methods[] = {
 	{"rotate", gr_node_rotate_cmd},
 	{"translate", gr_node_translate_cmd},
 	{"render", gr_render_cmd},
+	// Added for the project
+	{"add_texture", gr_node_add_texture_cmd},
 	{0, 0}
 };
 

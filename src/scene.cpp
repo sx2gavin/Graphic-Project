@@ -146,9 +146,15 @@ void GeometryNode::collectPrimitives(std::list<Primitive*> &objects)
 {
 	Primitive *new_object = new Primitive;
 	new_object = m_primitive->clone();
+	new_object->setIdName(m_id, m_name);
 	new_object->transform(m_parent_trans * m_trans * m_scale);
 	new_object->setMaterial(m_material);
 
 	objects.push_back(new_object);
 	SceneNode::collectPrimitives(objects);
+}
+
+void GeometryNode::addTexture(const std::string& filename, std::vector<Point3D> verts)
+{
+	m_primitive->addTexture(filename, verts);
 }

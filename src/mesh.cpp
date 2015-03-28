@@ -82,6 +82,15 @@ int Mesh::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 				retVal = 1;
 				if (p.z_buffer > t ) {
 					p.z_buffer = t;
+					if (m_texture_file != "") {
+						p0 = m_map[(*I)[0]];
+						p1 = m_map[*(J + 1)];
+						p2 = m_map[*(J + 2)];
+						
+						Point3D on_t = p0 + beta * (p1 - p0) + gamma * (p2 - p0);
+						Colour col(m_texture((int)on_t[0], (int)on_t[1], 0), m_texture((int)on_t[0], (int)on_t[1], 1), m_texture((int)on_t[0], (int)on_t[1], 2));
+						p.textureColor = col;		
+					}
 					p.material = m_material;
 					p.normal = n; 
 				}
@@ -110,11 +119,13 @@ Primitive* Mesh::clone()
 void Mesh::addTexture(const std::string& filename, std::vector<Point3D> verts)
 {
 	m_texture_file = filename;
-	if (!m_texture.loadPng(filename)) {
-		std::cerr << "ERROR: cannot load picture to texture." << std::endl;
-		return;
-	}	
-	m_map = verts;
+	if (filename != "") {
+		if (!m_texture.loadPng(filename)) {
+			std::cerr << "ERROR: cannot load picture to texture." << std::endl;
+			return;
+		}	
+		m_map = verts;
+	}
 }
 
 std::ostream& operator<<(std::ostream& out, const Mesh& mesh)

@@ -439,7 +439,7 @@ int gr_material_cmd(lua_State* L)
 	double refraction_rate = luaL_checknumber(L, 5);
 	double refraction_index = luaL_checknumber(L, 6);
 
-	data->material = new PhongMaterial(Colour(kd[0], kd[1], kd[2]),
+	data->material = new Material(Colour(kd[0], kd[1], kd[2]),
 			Colour(ks[0], ks[1], ks[2]),
 			shininess, reflection_rate, refraction_rate, refraction_index);
 
@@ -576,15 +576,15 @@ int gr_node_add_texture_cmd(lua_State* L)
 	SceneNode* self = selfdata->node;
 
 	std::vector<Point3D> verts;
-	const char* filename = luaL_checkstring(L, 1);
+	const char* filename = luaL_checkstring(L, 2);
 
-	luaL_checktype(L, 2, LUA_TTABLE);
-	int vert_count = luaL_getn(L, 2);
+	luaL_checktype(L, 3, LUA_TTABLE);
+	int vert_count = luaL_getn(L, 3);
 
-	luaL_argcheck(L, vert_count >= 1, 2, "Tuple of vertices expected");
+	luaL_argcheck(L, vert_count >= 1, 3, "Tuple of vertices expected");
 
 	for (int i = 1; i <= vert_count; i++) {
-		lua_rawgeti(L, 2, i);
+		lua_rawgeti(L, 3, i);
 
 		Point3D vertex;
 		get_tuple(L, -1, &vertex[0], 3);

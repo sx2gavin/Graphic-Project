@@ -4,7 +4,7 @@ Material::~Material()
 {
 }
 
-PhongMaterial::PhongMaterial(const Colour& kd, const Colour& ks, double shininess, double reflection_rate, double refraction_rate, double refraction_index)
+Material::Material(const Colour& kd, const Colour& ks, double shininess, double reflection_rate, double refraction_rate, double refraction_index)
   : m_kd(kd), 
 	m_ks(ks), 
 	m_shininess(shininess), 
@@ -12,13 +12,4 @@ PhongMaterial::PhongMaterial(const Colour& kd, const Colour& ks, double shinines
 	m_refraction_rate(refraction_rate),
 	m_refraction_index(refraction_index)
 {
-}
-
-PhongMaterial::~PhongMaterial()
-{
-}
-
-void PhongMaterial::apply_gl() const
-{
-  // Perform OpenGL calls necessary to set up this material.
 }

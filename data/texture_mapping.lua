@@ -64,6 +64,6 @@ desk:add_texture('wood_texture.png', {
 white_light_1 = gr.light({0, 100.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 white_light_2 = gr.light({100.0, 0.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 
-gr.render(scene_root, 'simple.png', 1024, 1024,
+gr.render(scene_root, 'texture_mapping.png', 1024, 1024,
 	  {0, 0, 100}, {0, 0, -1}, {0, 1, 0}, 50,
 	  {0.3, 0.3, 0.3}, {white_light_1, white_light_2})

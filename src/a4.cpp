@@ -57,7 +57,7 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 	Point3D hitPoint = ray_org + (p.z_buffer - 0.0001) * ray_dir;
 	Vector3D camera = ray_org - hitPoint;
 	camera.normalize();
-	final_color  = ambient * p.material->getDiffuseColor();
+	final_color  = ambient * (p.material->getDiffuseColor() + p.textureColor);
 	Vector3D lightDirection;
 
 	// secondary ray, adding shadows and shade.
@@ -88,7 +88,7 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 			// ambient color
 			final_color + 
 			// diffuse color
-			p.material->getDiffuseColor() * (cosTheta * (*I)->colour) * attenuation +
+			(p.material->getDiffuseColor() + p.textureColor) * (cosTheta * (*I)->colour) * attenuation +
 			// specular color
 			p.material->getSpecularColor() * (std::pow(cosAlpha, p.material->getShininess()) * (*I)->colour) * attenuation;
 	}

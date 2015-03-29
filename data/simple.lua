@@ -42,6 +42,11 @@ wall:add_texture('brick_wall_texture.png', {
 		{0, 0, 0},
 		{0, 1200, 0},
 		{1600, 1200, 0}})
+wall:add_bump('brick_wall_texture.png', {
+		{1600, 0, 0},
+		{0, 0, 0},
+		{0, 1200, 0},
+		{1600, 1200, 0}})
 
 desk = gr.mesh('desk', {
 		   { -1, 0, -1 }, 
@@ -61,9 +66,9 @@ desk:add_texture('wood_texture.png', {
 			{1920, 1200, 0},
 			{0, 1200, 0}})
 
-white_light_1 = gr.light({0, 100.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
-white_light_2 = gr.light({100.0, 0.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
+-- white_light_1 = gr.light({0, 100.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
+white_light_2 = gr.light({100.0, 0.0, 0.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 
 gr.render(scene_root, 'simple.png', 1024, 1024,
 	  {0, 0, 100}, {0, 0, -1}, {0, 1, 0}, 50,
-	  {0.3, 0.3, 0.3}, {white_light_1, white_light_2})
+	  {0.3, 0.3, 0.3}, {white_light_2})

@@ -46,11 +46,15 @@ int Mesh::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 			p2 = m_trans_verts[*(J + 2)];
 
 			n = (p1 - p0).cross(p2 - p0);
-			//num = - n.dot(ray_org - p0);
+			n.normalize();
 			den = n.dot(ray_dir);
 
 			// if the ray doesn't hit the plane represented by the triangle.
-			if (den == 0) break;
+			if (den == 0) {
+				break;
+			} else if (den > 0) {
+				n = -n;
+			}
 
 			x1 = p1[0] - p0[0];
 			x2 = p2[0] - p0[0];
@@ -83,16 +87,53 @@ int Mesh::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 				if (p.z_buffer > t ) {
 					p.z_buffer = t;
 					if (m_texture_file != "") {
-						p0 = m_map[(*I)[0]];
-						p1 = m_map[*(J + 1)];
-						p2 = m_map[*(J + 2)];
+						Point3D p0_t = m_texture_vert[(*I)[0]];
+						Point3D p1_t = m_texture_vert[*(J + 1)];
+						Point3D p2_t = m_texture_vert[*(J + 2)];
 						
-						Point3D on_t = p0 + beta * (p1 - p0) + gamma * (p2 - p0);
+						Point3D on_t = p0_t + beta * (p1_t - p0_t) + gamma * (p2_t - p0_t);
 						Colour col(m_texture((int)on_t[0], (int)on_t[1], 0), m_texture((int)on_t[0], (int)on_t[1], 1), m_texture((int)on_t[0], (int)on_t[1], 2));
 						p.textureColor = col;		
 					}
 					p.material = m_material;
-					p.normal = n; 
+
+					if (m_bump_file != "") {
+						Point3D p0_b = m_bump_vert[(*I)[0]];
+						Point3D p1_b = m_bump_vert[*(J + 1)];
+						Point3D p2_b = m_bump_vert[*(J + 2)];
+
+						Vector3D edge1 = p1 - p0;
+						Vector3D edge2 = p2 - p0;
+					
+						float deltaU1 = p1_b[0] - p0_b[0];
+						float deltaV1 = p1_b[1] - p0_b[1];		
+						float deltaU2 = p2_b[0] - p0_b[0];
+						float deltaV2 = p2_b[1] - p0_b[1];
+
+						float f = 1.0 / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+
+						Vector3D tangent, bitangent;
+
+						tangent[0] = f * (deltaV2 * edge1[0] - deltaV1 * edge2[0]);
+						tangent[1] = f * (deltaV2 * edge1[1] - deltaV1 * edge2[1]);
+						tangent[2] = f * (deltaV2 * edge1[2] - deltaV1 * edge2[2]);
+
+						tangent.normalize();
+
+						bitangent[0] = f * (-deltaU2 * edge1[0] + deltaU1 * edge2[0]);
+						bitangent[1] = f * (-deltaU2 * edge1[1] + deltaU1 * edge2[1]);
+						bitangent[2] = f * (-deltaU2 * edge1[2] + deltaU1 * edge2[2]);
+						bitangent.normalize();
+							
+						Point3D on_b = p0_b + beta * (p1_b - p0) + gamma * (p2_b - p0);
+						Vector3D bump(m_bump((int)on_b[0], (int)on_b[1], 0) * 2.0 - 1.0, m_bump((int)on_b[0], (int)on_b[1], 1) * 2.0 - 1.0, m_bump((int)on_b[0], (int)on_b[1], 2));
+						bump.normalize();
+						p.normal = bump[0] * tangent + bump[1] * bitangent + bump[2] * n;
+						p.normal.normalize();
+
+					} else {
+						p.normal = n; 
+					}
 				}
 				break;
 			}
@@ -112,7 +153,8 @@ void Mesh::transform(const Matrix4x4 t)
 Primitive* Mesh::clone()
 {
 	Mesh* new_mesh = new Mesh(m_verts, m_faces);
-	new_mesh->addTexture(m_texture_file, m_map);
+	new_mesh->addTexture(m_texture_file, m_texture_vert);
+	new_mesh->addBump(m_bump_file, m_bump_vert);
 	return new_mesh;
 }
 
@@ -124,7 +166,19 @@ void Mesh::addTexture(const std::string& filename, std::vector<Point3D> verts)
 			std::cerr << "ERROR: cannot load picture to texture." << std::endl;
 			return;
 		}	
-		m_map = verts;
+		m_texture_vert = verts;
+	}
+}
+
+void Mesh::addBump(const std::string& filename, std::vector<Point3D> verts)
+{
+	m_bump_file = filename;
+	if (filename != "") {
+		if (!m_bump.loadPng(filename)) {
+			std::cerr << "ERROR: cannot load picture to bump." << std::endl;
+			return;
+		}	
+		m_bump_vert = verts;
 	}
 }
 

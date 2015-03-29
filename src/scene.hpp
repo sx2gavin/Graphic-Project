@@ -48,6 +48,7 @@ class SceneNode {
 		void translate(const Vector3D& amount);
 
 		virtual void addTexture(const std::string& filename, std::vector<Point3D> verts){}
+		virtual void addBump(const std::string& filename, std::vector<Point3D> verts){}
 
 		// Returns true if and only if this node is a JointNode
 		virtual bool is_joint() const; 
@@ -104,6 +105,7 @@ class GeometryNode : public SceneNode {
 		}
 		virtual void collectPrimitives(std::list<Primitive*> &objects);
 		virtual void addTexture(const std::string& filename, std::vector<Point3D> verts);
+		virtual void addBump(const std::string& filename, std::vector<Point3D> verts);
 	protected:
 		Material* m_material;
 		Primitive* m_primitive;

@@ -21,6 +21,7 @@ class Mesh : public Primitive {
 		virtual void transform(const Matrix4x4 t);
 		virtual Primitive* clone(); 
 		virtual void addTexture(const std::string& filename, std::vector<Point3D> verts);
+		virtual void addBump(const std::string& filename, std::vector<Point3D> verts);
 
 	private:
 		std::vector<Point3D> m_trans_verts;
@@ -29,7 +30,10 @@ class Mesh : public Primitive {
 		// texture
 		std::string m_texture_file;
 		Image m_texture;
-		std::vector<Point3D> m_map;
+		std::vector<Point3D> m_texture_vert;
+		std::string m_bump_file;
+		Image m_bump;
+		std::vector<Point3D> m_bump_vert;
 
 		friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
 };

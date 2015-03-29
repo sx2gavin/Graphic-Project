@@ -22,6 +22,7 @@ class Primitive {
 		virtual int rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p){return 0;}
 		virtual int refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D& out, Vector3D& out_normal);
 		virtual void addTexture(const std::string& filename, std::vector<Point3D> verts){}
+		virtual void addBump(const std::string& filename, std::vector<Point3D> verts) {}
 
 		void setIdName(int id, std::string name)
 		{

@@ -158,3 +158,8 @@ void GeometryNode::addTexture(const std::string& filename, std::vector<Point3D> 
 {
 	m_primitive->addTexture(filename, verts);
 }
+
+void GeometryNode::addBump(const std::string& filename, std::vector<Point3D> verts)
+{
+	m_primitive->addBump(filename, verts);
+}

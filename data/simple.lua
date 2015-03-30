@@ -13,9 +13,9 @@ s1 = gr.nh_sphere('s1', {3, -5, 20}, 5)
 scene_root:add_child(s1)
 s1:set_material(mat1)
 
-s2 = gr.cone('s2', {0, -1, 0}, {0, 0, 0}, 10, 5)
-scene_root:add_child(s2)
-s2:set_material(mat2)
+-- s2 = gr.cone('s2', {0, -1, 0}, {0, 0, 0}, 10, 5)
+-- scene_root:add_child(s2)
+-- s2:set_material(mat2)
 
 -- s2 = gr.nh_sphere('s2', {10, 0, 0}, 10)
 -- scene_root:add_child(s2)
@@ -65,6 +65,12 @@ desk:add_texture('wood_texture.png', {
 			{1920, 0, 0},
 			{1920, 1200, 0},
 			{0, 1200, 0}})
+desk:add_bump('desk_bump.png', {
+			{0, 0, 0},
+			{1024, 0, 0},
+			{1024, 1024, 0},
+			{0, 1024, 0}})
+			
 
 -- white_light_1 = gr.light({0, 100.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 white_light_2 = gr.light({100.0, 0.0, 0.0}, {0.9, 0.9, 0.9}, {4, 0, 0})

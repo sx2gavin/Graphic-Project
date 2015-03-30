@@ -125,7 +125,7 @@ int Mesh::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 						bitangent[2] = f * (-deltaU2 * edge1[2] + deltaU1 * edge2[2]);
 						bitangent.normalize();
 							
-						Point3D on_b = p0_b + beta * (p1_b - p0) + gamma * (p2_b - p0);
+						Point3D on_b = p0_b + beta * (p1_b - p0_b) + gamma * (p2_b - p0_b);
 						Vector3D bump(m_bump((int)on_b[0], (int)on_b[1], 0) * 2.0 - 1.0, m_bump((int)on_b[0], (int)on_b[1], 1) * 2.0 - 1.0, m_bump((int)on_b[0], (int)on_b[1], 2));
 						bump.normalize();
 						p.normal = bump[0] * tangent + bump[1] * bitangent + bump[2] * n;

@@ -13,13 +13,14 @@ int rayTracing(std::list<Primitive*> &objects,
 			   Vector3D ray_dir, 
 			   const Colour& ambient, 
 			   const std::list<Light*>& lights, 
+			   const std::list<AreaLight*>& area_lights,
 			   int recursion_level,
 			   Colour &final_color);
 
-int rayTracingHit(std::list<Primitive*> &objects, 
-				  Point3D ray_org, 
-				  Vector3D ray_dir 
-				  );
+int shadowRay(std::list<Primitive*> &objects,
+			  const Point3D ray_org,
+			  const Vector3D ray_dir, 
+			  const double to_light_dis);
 
 void multiProcessing(int from, 
 			         int to, 
@@ -32,7 +33,8 @@ void multiProcessing(int from,
 					 const Vector3D& up, 
 					 double fov, 
 					 const Colour& ambient, 
-					 const std::list<Light*>& lights); 
+					 const std::list<Light*>& lights,  
+					 const std::list<AreaLight*>& area_lights);
 
 void a4_render(// What to render
                SceneNode* root,
@@ -45,7 +47,8 @@ void a4_render(// What to render
                const Vector3D& up, double fov,
                // Lighting parameters
                const Colour& ambient,
-               const std::list<Light*>& lights
+               const std::list<Light*>& lights,
+			   const std::list<AreaLight*>& area_lights
                );
 
 #endif

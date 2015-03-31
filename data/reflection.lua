@@ -51,6 +51,8 @@ desk:scale(40, 1, 50)
 white_light_1 = gr.light({0, 100.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 white_light_2 = gr.light({100.0, 0.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 
-gr.render(scene_root, 'reflection.png', 1024, 1024,
+area_light_1 = gr.area_light({100.0, 100.0, 100.0}, {-10.0, 0, 10.0}, {10.0, -10.0, 10.0}, {0.0, 0.0, 0.0}, {4, 0, 0}) 
+
+gr.render(scene_root, 'simple.png', 1024, 1024,
 	  {0, 0, 100}, {0, 0, -1}, {0, 1, 0}, 50,
-	  {0.3, 0.3, 0.3}, {white_light_1, white_light_2})
+	  {0.3, 0.3, 0.3}, {white_light_1, white_light_2}, {area_light_1})

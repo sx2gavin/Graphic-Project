@@ -15,4 +15,14 @@ struct Light {
 
 std::ostream& operator<<(std::ostream& out, const Light& l);
 
+// Represents an area light.
+struct AreaLight {
+	AreaLight();
+
+	Colour colour;
+	Point3D position;
+	Vector3D u;
+	Vector3D v;
+	double falloff[3];
+};
 #endif

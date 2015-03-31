@@ -88,6 +88,13 @@ struct gr_light_ud {
 	Light* light;
 };
 
+// The "userdata" type for an area light. Objects of this type will be
+// allocated by Lua to represent area lights.
+struct gr_area_light_ud {
+	AreaLight* area_light;
+};
+
+
 // Useful function to retrieve and check an n-tuple of numbers.
 	template<typename T>
 void get_tuple(lua_State* L, int arg, T* data, int n)
@@ -373,6 +380,36 @@ int gr_light_cmd(lua_State* L)
 	return 1;
 }
 
+// Make a area light
+	extern "C"
+int gr_area_light_cmd(lua_State* L)
+{
+	GRLUA_DEBUG_CALL;
+
+	gr_area_light_ud* data = (gr_area_light_ud*)lua_newuserdata(L, sizeof(gr_area_light_ud));
+	data->area_light = 0;
+
+	AreaLight al;
+
+	double col[3];
+
+	get_tuple(L, 1, &al.position[0], 3);
+	get_tuple(L, 2, &al.u[0], 3);
+	get_tuple(L, 3, &al.v[0], 3);
+
+	get_tuple(L, 4, col, 3);
+	get_tuple(L, 5, al.falloff, 3);
+
+	al.colour = Colour(col[0], col[1], col[2]);
+
+	data->area_light = new AreaLight(al);
+
+	luaL_newmetatable(L, "gr.area_light");
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+
 // Render a scene
 	extern "C"
 int gr_render_cmd(lua_State* L)
@@ -414,9 +451,22 @@ int gr_render_cmd(lua_State* L)
 		lua_pop(L, 1);
 	}
 
+	luaL_checktype(L, 11, LUA_TTABLE);
+	int area_light_count = luaL_getn(L, 11);
+
+	luaL_argcheck(L, area_light_count >= 1, 11, "Tuple of area lights expected");
+	std::list<AreaLight*> area_lights;
+	for (int i = 1; i <= area_light_count; i++) {
+		lua_rawgeti(L, 11, i);
+		gr_area_light_ud* ldata = (gr_area_light_ud*)luaL_checkudata(L, -1, "gr.area_light");
+		luaL_argcheck(L, ldata != 0, 11, "Area Light expected");
+		area_lights.push_back(ldata->area_light);
+		lua_pop(L, 1);
+	}
+
 	a4_render(root->node, filename, width, height,
 			eye, view, up, fov,
-			ambient, lights);
+			ambient, lights, area_lights);
 
 	return 0;
 }
@@ -670,6 +720,7 @@ static const luaL_reg grlib_functions[] = {
 	// Added for the project
 	{"cone", gr_cone_cmd},
 	{"cylinder", gr_cylinder_cmd},
+	{"area_light", gr_area_light_cmd},
 	{0, 0}
 };
 

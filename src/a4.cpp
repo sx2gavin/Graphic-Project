@@ -5,9 +5,11 @@
 #include "material.hpp"
 #include <thread>
 #include <ctime>
+#include <cstdlib>
 
 #define RECURSION_LEVEL 3
 #define NUM_THREADS 6
+#define SOFT_SHADOW_RAYS 5 
 
 void render_background(int width, int height, Image *img) 
 {
@@ -28,7 +30,7 @@ void render_background(int width, int height, Image *img)
 	}	
 }
 
-int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir, const Colour& ambient, const std::list<Light*>& lights, int recursion_level, Colour &final_color)
+int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir, const Colour& ambient, const std::list<Light*>& lights, const std::list<AreaLight*>& area_lights, int recursion_level, Colour &final_color)
 {
 	pixel temp;
 	pixel p;
@@ -45,7 +47,9 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 	}
 	// if the ray didn't hit anything, return 0 and abort.
 	
-	if (!retVal) return retVal;
+	if (!retVal) {		
+		return 0;
+	}
 
 	// Adding Phong shading.
 	double distance;
@@ -53,13 +57,36 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 	float cosTheta;
 	Vector3D reflection;
 	float cosAlpha;
+	Colour soft_shadow_color(0.0, 0.0, 0.0);
+	Colour reflected_color(0.0, 0.0, 0.0);
+	Colour refracted_color(0.0, 0.0, 0.0);
+	Point3D hitPoint;
 
-	Point3D hitPoint = ray_org + (p.z_buffer - 0.0001) * ray_dir;
-	Vector3D camera = ray_org - hitPoint;
-	camera.normalize();
-	final_color  = ambient * (p.material->getDiffuseColor() + p.textureColor);
+	// recursive ray, adding reflection or refraction
+	if ( recursion_level > 0 ) {
+
+		Point3D out;
+		Vector3D out_normal;
+		hitPoint = ray_org + p.z_buffer * ray_dir;	
+		if (hitObject->refractiveRay(hitPoint, ray_dir, p.normal, out, out_normal)) {
+			if (rayTracing(objects, out + 0.01 * out_normal, out_normal, ambient, lights, area_lights, 1, refracted_color)) {
+				refracted_color = refracted_color * p.material->getRefractionRate();	
+				// std::cerr << refracted_color << std::endl;
+			}
+		}	
+
+		hitPoint = ray_org + (p.z_buffer - 0.0001) * ray_dir;
+		if ( p.material->getReflectionRate() > 0.0 ) {
+			reflection = ray_dir - 2 * (ray_dir.dot(p.normal)) * p.normal; 
+			reflection.normalize();
+			if (rayTracing(objects, hitPoint, reflection, ambient, lights, area_lights, recursion_level - 1,  reflected_color)) {
+				reflected_color = reflected_color * p.material->getReflectionRate();
+			}
+		}
+	}	
+
+	final_color  = ambient * (p.material->getDiffuseColor() + p.textureColor) + refracted_color;
 	Vector3D lightDirection;
-
 	// secondary ray, adding shadows and shade.
 	for (std::list<Light*>::const_iterator I = lights.begin(); I != lights.end(); I++) { 
 
@@ -67,13 +94,13 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 		distance = lightDirection.length();
 		lightDirection.normalize();
 
-		if (rayTracingHit(objects, hitPoint, lightDirection)) {
+		if (shadowRay(objects, hitPoint, lightDirection, distance)) {
 			continue;
 		}	
 		attenuation = 1 / ((*I)->falloff[0] + distance* (*I)->falloff[1] + distance * distance * (*I)->falloff[2]);
 
 		// normal correction	
-		if (p.normal.dot(camera) < 0) {
+		if (p.normal.dot(ray_dir) > 0) {
 			p.normal = -p.normal;
 		}
 		// diffuse
@@ -82,50 +109,67 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 
 		reflection = - lightDirection - 2 * ((-lightDirection).dot(p.normal)) * p.normal;
 		reflection.normalize();
-		cosAlpha = clamp(camera.dot(reflection), 0, 1);
+		cosAlpha = clamp((-ray_dir).dot(reflection), 0, 1);
 
 		final_color =
 			// ambient color
 			final_color + 
 			// diffuse color
 			(p.material->getDiffuseColor() + p.textureColor) * (cosTheta * (*I)->colour) * attenuation +
-			// specular color
+			// specular color or reflected color;
 			p.material->getSpecularColor() * (std::pow(cosAlpha, p.material->getShininess()) * (*I)->colour) * attenuation;
 	}
 
-	// recursive ray, adding reflection or refraction
-	if ( recursion_level > 0 ) {
-		if ( p.material->getReflectionRate() > 0.0 ) {
-			Colour reflected_color(0, 0, 0);
-			reflection = (- camera) - 2 * ((-camera).dot(p.normal)) * p.normal; 
-			reflection.normalize();
-			if (rayTracing(objects, hitPoint, reflection, ambient, lights, recursion_level - 1,  reflected_color)) {
-				final_color = final_color + reflected_color * p.material->getReflectionRate();	
-			}
-		}
+	// softshadows, cast multiple rays from the point to random point on the light source.
+	/*for (std::list<AreaLight*>::const_iterator I = area_lights.begin(); I != area_lights.end(); I++) {
+		for (int i = 0; i < SOFT_SHADOW_RAYS; i++) {
+			double ran_u = ((double) rand() / (RAND_MAX));
+			double ran_v = ((double) rand() / (RAND_MAX));
+			
+			Point3D light_pos = (*I)->position + ran_u * (*I)->u + ran_v * (*I)->v;	
+			lightDirection = light_pos - hitPoint;
+			distance = lightDirection.length();
+			lightDirection.normalize();
 
-		Point3D out;
-		Vector3D out_normal;
-		hitPoint = ray_org + p.z_buffer * ray_dir;	
-		if (hitObject->refractiveRay(hitPoint, ray_dir, p.normal, out, out_normal)) {
-			Colour refracted_color(0.0, 0.0, 0.0);
-			if (rayTracing(objects, out + 0.01 * out_normal, out_normal, ambient, lights, 1, refracted_color)) {
-				final_color = final_color + refracted_color * p.material->getRefractionRate();
+			if (shadowRay(objects, hitPoint, lightDirection, distance)) {
+				break;
 			}
-		}	
-	}
+			attenuation = 1 / ((*I)->falloff[0] + distance* (*I)->falloff[1] + distance * distance * (*I)->falloff[2]);
+
+			cosTheta = clamp(p.normal.dot(lightDirection), 0, 1);
+			reflection = - lightDirection - 2 * ((-lightDirection).dot(p.normal)) * p.normal;
+			reflection.normalize();
+			cosAlpha = clamp(ray_dir.dot(reflection), 0, 1);
+
+			soft_shadow_color =
+				// ambient color
+				soft_shadow_color + 
+				// diffuse color
+				(p.material->getDiffuseColor() + p.textureColor) * (cosTheta * (*I)->colour) * attenuation +
+				// specular color
+				p.material->getSpecularColor() * (std::pow(cosAlpha, p.material->getShininess()) * (*I)->colour) * attenuation;
+		}
+		soft_shadow_color = soft_shadow_color / SOFT_SHADOW_RAYS;
+		final_color = final_color + soft_shadow_color;
+	}*/
+
 	return retVal;
 }
 
-int rayTracingHit(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir)
+int shadowRay(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir, double to_light_dis)
 {
 	pixel temp;
+	pixel p;
 	int retVal = 0;
 	for (std::list<Primitive*>::const_iterator i = objects.begin(); i != objects.end(); i++) {
 		if ((*i)->rayTracing(ray_org, ray_dir, temp)) {
-			retVal = 1;
-			break;
+			if (temp.z_buffer < p.z_buffer) {
+				p = temp;
+			}
 		}	
+	}
+	if (p.z_buffer <= to_light_dis && p.z_buffer > 0.0) {
+		retVal = 1;
 	}
 	return retVal;
 }
@@ -141,7 +185,8 @@ void multiProcessing(int from,
 					 const Vector3D& up, 
 					 double fov, 
 					 const Colour& ambient, 
-					 const std::list<Light*>& lights) 
+					 const std::list<Light*>& lights,
+					 const std::list<AreaLight*>& area_lights) 
 {
 
 	Point3D p_world;
@@ -164,7 +209,6 @@ void multiProcessing(int from,
 
 
 			// step 3. Rotate
-			double l;
 			// w
 			Vector3D w = view;
 			w.normalize();
@@ -196,7 +240,7 @@ void multiProcessing(int from,
 			// primary ray
 			Vector3D ray_direction = p_world - eye;
 			ray_direction.normalize();
-			if (rayTracing(objects, eye, ray_direction, ambient, lights, RECURSION_LEVEL, pixel_color)) {
+			if (rayTracing(objects, eye, ray_direction, ambient, lights, area_lights, RECURSION_LEVEL, pixel_color)) {
 				(*img)(x, y, 0) = pixel_color.R();
 				(*img)(x, y, 1) = pixel_color.G();
 				(*img)(x, y, 2) = pixel_color.B();
@@ -216,9 +260,12 @@ void a4_render(// What to render
 		const Vector3D& up, double fov,
 		// Lighting parameters
 		const Colour& ambient,
-		const std::list<Light*>& lights
+		const std::list<Light*>& lights,
+		const std::list<AreaLight*>& area_lights
 		)
 {
+	// Generate the random seed.
+	srand (time(NULL));
 	// defines threads.
 	int from_height = 0;
 	int to_height = 0; 
@@ -251,9 +298,9 @@ void a4_render(// What to render
 		from_height = i * height / NUM_THREADS;
 		to_height = (i + 1) * height / NUM_THREADS - 1;
 		if ( i == NUM_THREADS - 1 ) {
-			multiProcessing( from_height, to_height, height, width, &img, objects, eye, view, up, fov, ambient, lights);
+			multiProcessing( from_height, to_height, height, width, &img, objects, eye, view, up, fov, ambient, lights, area_lights);
 		} else {
-			threads[i] = std::thread( multiProcessing, from_height, to_height, height, width, &img, objects, eye, view, up, fov, ambient, lights);
+			threads[i] = std::thread( multiProcessing, from_height, to_height, height, width, &img, objects, eye, view, up, fov, ambient, lights, area_lights);
 		}
 	}
 

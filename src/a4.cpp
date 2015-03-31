@@ -9,7 +9,7 @@
 
 #define RECURSION_LEVEL 3
 #define NUM_THREADS 6
-#define SOFT_SHADOW_RAYS 5 
+#define SOFT_SHADOW_RAYS 20 
 
 void render_background(int width, int height, Image *img) 
 {
@@ -62,6 +62,12 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 	Colour refracted_color(0.0, 0.0, 0.0);
 	Point3D hitPoint;
 
+	// normal correction	
+	if (p.normal.dot(ray_dir) > 0) {
+		p.normal = -p.normal;
+	}
+	p.normal.normalize();
+
 	// recursive ray, adding reflection or refraction
 	if ( recursion_level > 0 ) {
 
@@ -85,7 +91,7 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 		}
 	}	
 
-	final_color  = ambient * (p.material->getDiffuseColor() + p.textureColor) + refracted_color;
+	final_color  = ambient * (p.material->getDiffuseColor() + p.textureColor) + reflected_color + refracted_color;
 	Vector3D lightDirection;
 	// secondary ray, adding shadows and shade.
 	for (std::list<Light*>::const_iterator I = lights.begin(); I != lights.end(); I++) { 
@@ -99,12 +105,7 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 		}	
 		attenuation = 1 / ((*I)->falloff[0] + distance* (*I)->falloff[1] + distance * distance * (*I)->falloff[2]);
 
-		// normal correction	
-		if (p.normal.dot(ray_dir) > 0) {
-			p.normal = -p.normal;
-		}
 		// diffuse
-		p.normal.normalize();
 		cosTheta = clamp(p.normal.dot(lightDirection), 0, 1);
 
 		reflection = - lightDirection - 2 * ((-lightDirection).dot(p.normal)) * p.normal;
@@ -121,7 +122,7 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 	}
 
 	// softshadows, cast multiple rays from the point to random point on the light source.
-	/*for (std::list<AreaLight*>::const_iterator I = area_lights.begin(); I != area_lights.end(); I++) {
+	for (std::list<AreaLight*>::const_iterator I = area_lights.begin(); I != area_lights.end(); I++) {
 		for (int i = 0; i < SOFT_SHADOW_RAYS; i++) {
 			double ran_u = ((double) rand() / (RAND_MAX));
 			double ran_v = ((double) rand() / (RAND_MAX));
@@ -151,7 +152,7 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 		}
 		soft_shadow_color = soft_shadow_color / SOFT_SHADOW_RAYS;
 		final_color = final_color + soft_shadow_color;
-	}*/
+	}
 
 	return retVal;
 }

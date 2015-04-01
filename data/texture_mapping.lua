@@ -2,16 +2,15 @@
 
 mat1 = gr.material({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 25, 1.0, 1.0, 1.53)
 mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 5, 0.5, 0, 0)
--- mat3 = gr.material({1.0, 0.6, 0.1}, {0.5, 0.7, 0.5}, 5)
 
 wall_mat = gr.material({0.0, 0.0, 0.0}, {0.2, 0.2, 0.2}, 0, 0, 0, 0)
 desk_mat = gr.material({0.0, 0.0, 0.0}, {0.2, 0.2, 0.2}, 5, 0.2, 0, 0)
 
 scene_root = gr.node('root')
 
-s1 = gr.nh_sphere('s1', {3, -5, 20}, 5)
-scene_root:add_child(s1)
-s1:set_material(mat1)
+-- s1 = gr.nh_sphere('s1', {3, -5, 20}, 5)
+-- scene_root:add_child(s1)
+-- s1:set_material(mat1)
 
 wall = gr.mesh('wall', {
 		{1, 1, 0},
@@ -52,8 +51,8 @@ desk:add_texture('wood_texture.png', {
 white_light_1 = gr.light({0, 100.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 white_light_2 = gr.light({100.0, 0.0, 100.0}, {0.9, 0.9, 0.9}, {4, 0, 0})
 
-area_light_1 = gr.area_light({100.0, 100.0, 100.0}, {-10.0, 0, 10.0}, {10.0, -10.0, 10.0}, {0.0, 0.0, 0.0}, {4, 0, 0}) 
+area_light_1 = gr.area_light({100.0, 100.0, 100.0}, {-10.0, 0, 10.0},20,  {10.0, -10.0, 10.0}, 20, {0.0, 0.0, 0.0}, {4, 0, 0}) 
 
-gr.render(scene_root, 'simple.png', 1024, 1024,
+gr.render(scene_root, 'texture_mapping.png', 1024, 1024,
 	  {0, 0, 100}, {0, 0, -1}, {0, 1, 0}, 50,
 	  {0.3, 0.3, 0.3}, {white_light_1, white_light_2}, {area_light_1})

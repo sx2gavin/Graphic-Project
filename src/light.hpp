@@ -22,7 +22,11 @@ struct AreaLight {
 	Colour colour;
 	Point3D position;
 	Vector3D u;
+	double u_length;
 	Vector3D v;
+	double v_length;
 	double falloff[3];
+	
+	int rayTracing(Point3D ray_org, Vector3D ray_dir, double& distance, Colour& color);
 };
 #endif

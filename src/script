@@ -1,4 +1,4 @@
 mv rt ../data
 cd ../data
-./rt simple.lua
+./rt final.lua
 cd ../src

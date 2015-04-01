@@ -9,7 +9,7 @@
 
 #define RECURSION_LEVEL 3
 #define NUM_THREADS 6
-#define SOFT_SHADOW_RAYS 20 
+#define SOFT_SHADOW_RAYS 100 
 
 void render_background(int width, int height, Image *img) 
 {
@@ -45,6 +45,24 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 			}
 		}	
 	}
+	double l_closest = DBL_MAX;
+	Colour l_col(0, 0, 0);
+	for (std::list<AreaLight*>::const_iterator I = area_lights.begin(); I != area_lights.end(); I++) {
+		double l_dis;
+		Colour temp_col(0,0,0);
+		if ((*I)->rayTracing(ray_org, ray_dir, l_dis, temp_col)) {
+			retVal = 1;
+			if ( l_dis < l_closest) {
+				l_closest = l_dis;
+				l_col = temp_col;
+			}	
+		}	
+	}	
+
+	if ( l_closest < p.z_buffer ) {
+		final_color = l_col;
+		return retVal;
+	}			
 	// if the ray didn't hit anything, return 0 and abort.
 	
 	if (!retVal) {		
@@ -123,11 +141,13 @@ int rayTracing(std::list<Primitive*> &objects, Point3D ray_org, Vector3D ray_dir
 
 	// softshadows, cast multiple rays from the point to random point on the light source.
 	for (std::list<AreaLight*>::const_iterator I = area_lights.begin(); I != area_lights.end(); I++) {
+		if ((*I)->colour == Colour(0.0, 0.0, 0.0)) continue;
+
 		for (int i = 0; i < SOFT_SHADOW_RAYS; i++) {
 			double ran_u = ((double) rand() / (RAND_MAX));
 			double ran_v = ((double) rand() / (RAND_MAX));
-			
-			Point3D light_pos = (*I)->position + ran_u * (*I)->u + ran_v * (*I)->v;	
+				
+			Point3D light_pos = (*I)->position + ran_u * (*I)->u_length * (*I)->u + ran_v * (*I)->v_length * (*I)->v;	
 			lightDirection = light_pos - hitPoint;
 			distance = lightDirection.length();
 			lightDirection.normalize();

@@ -24,7 +24,7 @@ int Primitive::refractiveRay(Point3D in, Vector3D in_normal, Vector3D n, Point3D
 
 	pixel p;
 	// make sure the starting point is a little bit inside of the object so it won't hit the surface.
-	Point3D start = in + 0.001 * t;
+	Point3D start = in;
 	rayTracing(start, t, p);
 	out = in + p.z_buffer * t;
 	// normal correction	
@@ -424,14 +424,15 @@ int NonhierSphere::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 	double b = 2 * ray_dir.dot(ray_org - m_pos);
 	double c = (ray_org - m_pos).dot(ray_org - m_pos) - m_radius * m_radius;
 	double roots[2]; 
+	int numRoots = quadraticRoots(a, b, c, roots);
 	
-	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
+	if (numRoots == 1 && roots[0] > 0.0 + FLT_EPSILON) {	
 		p.z_buffer = roots[0];
 		retVal = 1;
-	} else if (quadraticRoots(a, b, c, roots) > 1 && std::min(roots[0], roots[1]) > 0) {
+	} else if (numRoots == 2 && std::min(roots[0], roots[1]) > 0 + FLT_EPSILON) {
 		p.z_buffer = std::min(roots[0], roots[1]);
 		retVal = 1;
-	} else if (std::min(roots[0], roots[1]) <= 0.0 && std::max(roots[0], roots[1]) > 0.0) {
+	} else if (numRoots == 2 && std::min(roots[0], roots[1]) <= 0.0 + FLT_EPSILON && std::max(roots[0], roots[1]) > 0.0 + FLT_EPSILON) {
 		p.z_buffer = std::max(roots[0], roots[1]);
 		retVal = 1;
 	}	
@@ -567,7 +568,7 @@ int NonhierBox::rayTracing(Point3D ray_org, Vector3D ray_dir,  pixel& p)
 			gamma = d2 / d;
 			t = d3 / d;
 
-			if ( beta >= 0 && gamma >= 0 && (beta + gamma) <= 1 && t > 0.0) {
+			if ( beta >= 0.0 && gamma >= 0.0 && (beta + gamma) <= 1.0 && t > 0.0001) {
 				// the ray hits the triangle. 
 				retVal = 1;
 				if ( p.z_buffer > t) {
@@ -615,27 +616,35 @@ int Cone::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 	double b = 2 * pow(cos(angle), 2) * (v - v_dot_m_d * m_d).dot(delta_p - p_dot_m_d * m_d) - 2 * pow(sin(angle), 2) * v_dot_m_d * p_dot_m_d;
 	double c = pow(cos(angle), 2) * (delta_p - p_dot_m_d * m_d).length2() - pow(sin(angle) * p_dot_m_d, 2) ; 
 	double roots[2]; 
+	int numRoots = quadraticRoots(a, b, c, roots);
 
 	// intersection between the ray and the cone
-	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
+	if (numRoots == 1 && roots[0] > 0.0 + FLT_EPSILON ) {	
 		q = ray_org + roots[0] * ray_dir;
 		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 			p.z_buffer = roots[0];
 			retVal = 1;
 		}
-	} else if (quadraticRoots(a, b, c, roots) > 1 && std::min(roots[0], roots[1]) > 0) {
+	} else if (numRoots == 2 && std::min(roots[0], roots[1]) > 0.0 + FLT_EPSILON ) {
 		q = ray_org + std::min(roots[0], roots[1]) * ray_dir;
-		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+		if ((q - m_pos).dot(m_d) >= 0.0 + FLT_EPSILON && (q - m_pos).dot(m_d) <= m_height) {
 			p.z_buffer = std::min(roots[0], roots[1]);
 			retVal = 1;
 		} else {
 			q = ray_org + std::max(roots[0], roots[1]) * ray_dir;
-			if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+			if ((q - m_pos).dot(m_d) >= 0.0 + FLT_EPSILON && (q - m_pos).dot(m_d) <= m_height) {
 				p.z_buffer = std::max(roots[0], roots[1]);
 				retVal = 1;
 			}
 		}
+	} else if (numRoots == 2 && std::min(roots[0], roots[1]) <= 0.0 + FLT_EPSILON  && std::max(roots[0], roots[1]) > 0.0) {
+		q = ray_org + std::max(roots[0], roots[1]) * ray_dir;
+		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+			p.z_buffer = std::max(roots[0], roots[1]);
+			retVal = 1;
+		}
 	}
+
 	if (retVal) {
 		p.material = m_material;
 		p.normal = q - (m_pos + (q - m_pos).dot(m_d) * m_d);
@@ -649,9 +658,10 @@ int Cone::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 		num = -m_d.dot(ray_org - center);
 		double t = num / den;
 		Point3D intersection = ray_org + t * ray_dir;
-		if ((intersection - center).length() <= m_radius && t < p.z_buffer && t > 0) {
+		if ((intersection - center).length() <= m_radius && t < p.z_buffer && t > 0.0 + FLT_EPSILON) {
 			p.z_buffer = t;
 			p.normal = m_d;		
+			p.material = m_material;
 			retVal = 1;
 		}
 	}
@@ -688,16 +698,17 @@ int Cylinder::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 	double b = 2 * (v - v_dot_m_d * m_d).dot(delta_p - p_dot_m_d * m_d); 
 	double c = (delta_p - p_dot_m_d * m_d).length2() - pow(m_radius, 2); 
 	double roots[2]; 
+	int numRoots = quadraticRoots(a, b, c, roots);
 	p.material = m_material;
 
-	// intersection between the ray and the cone
-	if (quadraticRoots(a, b, c, roots) == 1 && roots[0] > 0) {	
+	// intersection between the ray and the cylinder
+	if (numRoots == 1 && roots[0] > 0.0 + FLT_EPSILON) {	
 		q = ray_org + roots[0] * ray_dir;
 		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 			p.z_buffer = roots[0];
 			retVal = 1;
 		}
-	} else if (quadraticRoots(a, b, c, roots) > 1 && std::min(roots[0], roots[1]) > 0) {
+	} else if (numRoots == 2 && std::min(roots[0], roots[1]) > 0.0 + FLT_EPSILON) {
 		q = ray_org + std::min(roots[0], roots[1]) * ray_dir;
 		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
 			p.z_buffer = std::min(roots[0], roots[1]);
@@ -709,7 +720,14 @@ int Cylinder::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 				retVal = 1;
 			}
 		}
+	} else if (numRoots == 2 && std::min(roots[0], roots[1]) <= 0.0 + FLT_EPSILON && std::max(roots[0], roots[1]) > 0.0) {
+		q = ray_org + std::max(roots[0], roots[1]) * ray_dir;
+		if ((q - m_pos).dot(m_d) >= 0 && (q - m_pos).dot(m_d) <= m_height) {
+			p.z_buffer = std::max(roots[0], roots[1]);
+			retVal = 1;
+		}
 	}
+
 	if (retVal) {
 		p.normal = q - (m_pos + (q - m_pos).dot(m_d) * m_d);
 	}
@@ -723,18 +741,18 @@ int Cylinder::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 		num = m_d.dot(center - ray_org);
 		double t = num / den;
 		Point3D intersection = ray_org + t * ray_dir;
-		if ((intersection - center).length() <= m_radius && t < p.z_buffer && t > 0) {
+		if ((intersection - center).length() <= m_radius && t < p.z_buffer && t > 0.0 + FLT_EPSILON) {
 			p.z_buffer = t;
-			p.normal = - m_d;		
+			p.normal = m_d;		
 			retVal = 1;
 		}
 		// bottom	
 		num = m_d.dot(m_pos - ray_org); 
 		t = num / den;
 		intersection = ray_org + t * ray_dir;
-		if ((intersection - m_pos).length() <= m_radius && t < p.z_buffer && t > 0) {
+		if ((intersection - m_pos).length() <= m_radius && t < p.z_buffer && t > 0.0 + FLT_EPSILON) {
 			p.z_buffer = t;
-			p.normal = -m_d;		
+			p.normal = - m_d;		
 			retVal = 1;
 		}
 	}

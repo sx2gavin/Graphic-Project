@@ -395,10 +395,11 @@ int gr_area_light_cmd(lua_State* L)
 
 	get_tuple(L, 1, &al.position[0], 3);
 	get_tuple(L, 2, &al.u[0], 3);
-	get_tuple(L, 3, &al.v[0], 3);
-
-	get_tuple(L, 4, col, 3);
-	get_tuple(L, 5, al.falloff, 3);
+	al.u_length = luaL_checknumber(L, 3);
+	get_tuple(L, 4, &al.v[0], 3);
+	al.v_length = luaL_checknumber(L, 5);	
+	get_tuple(L, 6, col, 3);
+	get_tuple(L, 7, al.falloff, 3);
 
 	al.colour = Colour(col[0], col[1], col[2]);
 

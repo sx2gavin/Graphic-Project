@@ -81,7 +81,7 @@ int Mesh::rayTracing(Point3D ray_org, Vector3D ray_dir, pixel& p)
 			t = d3 / d;
 
 
-			if ( beta >= 0 && gamma >= 0 && (beta + gamma) <= 1 && t > 0.0) {
+			if ( beta >= 0 && gamma >= 0 && (beta + gamma) <= 1 && t > 0.01) {
 				// the ray hits the triangle. 
 				retVal = 1;
 				if (p.z_buffer > t ) {

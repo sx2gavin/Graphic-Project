@@ -488,6 +488,15 @@ inline Colour operator /(const Colour& a, const double& b)
 	return Colour(a.R()/b, a.G()/b, a.B()/b);
 }
 
+inline bool operator == (const Colour& a, const Colour& b)
+{
+	if ( a.R() == b.R() && a.G() == b.G() && a.B() == b.B()) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 inline std::ostream& operator <<(std::ostream& os, const Colour& c)
 {
   return os << "c<" << c.R() << "," << c.G() << "," << c.B() << ">";

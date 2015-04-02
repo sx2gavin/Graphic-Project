@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CS 488 Project by Xiangyu Luo</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function(){ 
+			$("#myTab li:eq(0) a").tab('show');
+		});
+	</script>
+</head>
+
+<body>
+<div class="container">
+</div>
+<div class="container">
+	<div class="jumbotron">
+		<h1>CS 488 Final Project</h1>
+		<h2>Ray tracer</h2>
+		<p>by Xiangyu(Gavin) Luo</p>
+	</div>
+	<ul class="nav nav-tabs" id="myTab">
+		<li><a data-toggle="tab" href="#Objective_2">Objective #2</a></li>
+		<li><a data-toggle="tab" href="#Objective_3">Objective #3</a></li>
+		<li><a data-toggle="tab" href="#Objective_4">Objective #4</a></li>
+		<li><a data-toggle="tab" href="#Objective_5">Objective #5</a></li>
+		<li><a data-toggle="tab" href="#Objective_7">Objective #7</a></li>
+		<li><a data-toggle="tab" href="#Objective_8">Objective #8</a></li>
+		<li><a data-toggle="tab" href="#Objective_9">Objective #9</a></li>
+		<li><a data-toggle="tab" href="#Objective_10">Objective #10</a></li>
+	</ul>
+		
+	<div class="tab-content">
+		<div id="Objective_2" class="tab-pane fade in active">
+			<h2> Object #2: Reflection </h2>
+			<img src="data/reflection.png" alt="Reflection">
+		</div>
+		<div id="Objective_3" class="tab-pane fade">
+			<h2> Object #3: Refraction </h2>
+			<img src="data/refraction.png" alt="Refraction">
+		</div>
+		<div id="Objective_4" class="tab-pane fade">
+			<h2> Object #4: Texture mapping </h2>
+			<img src="data/texture_mapping.png" alt="Texture mapping">
+		</div>
+		<div id="Objective_5" class="tab-pane fade">
+			<h2> Object #5: Additional primitives: Cone and Cylinder </h2>
+			<img src="data/cone_cylinder.png" alt="Cone and Cylinderder">
+		</div>
+		<div id="Objective_7" class="tab-pane fade">
+			<h2> Object #7: soft shadows </h2>
+			<h3> Without soft shadow:</h3>
+			<img src="data/sharp_shadow.png" alt="Sharp shadow">
+			<h3> With soft shadow:</h3>
+			<img src="data/soft_shadow_1.png" alt="Soft shadow">
+		</div>
+		<div id="Objective_8" class="tab-pane fade">
+			<h2> Object #8: Multi-processing using threads. </h2>
+			<img src="data/threads.png" alt="threads">
+		</div>
+		<div id="Objective_9" class="tab-pane fade">
+			<h2> Object #9: Bump mapping </h2>
+			<h3> Scene without bump mapping: </h3>
+			<img src="data/bump_mapping_1.png" alt="No bump mapping">
+			<h3> Scene with bump mapping and light on the right:</h3>
+			<img src="data/bump_mapping_2.png" alt="bump mapping right">
+			<h3> Scene with bump mapping and light on the left:</h3>
+			<img src="data/bump_mapping_3.png" alt="bump mapping left">
+		</div>
+		<div id="Objective_10" class="tab-pane fade">
+			<div class="container">
+			<h2> Object #10: Final scene</h2>
+			<img src="data/final.png" alt="Final scene" style="height:auto; width:auto">
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+</html>
